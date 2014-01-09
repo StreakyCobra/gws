@@ -1,0 +1,9 @@
+# Bash completion for gws
+
+_gws()
+{
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    COMPREPLY=( $(compgen -W "update status check" -- $cur) )
+}
+
+complete -F _gws gws
