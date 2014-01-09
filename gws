@@ -486,7 +486,7 @@ function usage()
     echo "Usage: $(basename "$0") <command>"
     echo ""
     echo "where <command> is:"
-    echo "    update - Update the workspace to get the new repositories"
+    echo "    update - Update the workspace to get new repositories from projects list"
     echo "    status - Print status for all repositories in the workspace"
     echo "    check  - Check the workspace for all repositories (known/unknown/missing)"
     exit 1
