@@ -517,4 +517,7 @@ case $1 in
     *) usage ;;
 esac
 
+# Disable colors
+echo -e "${C_OFF}"
+
 # vim: fdm=marker
