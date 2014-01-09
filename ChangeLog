@@ -1,0 +1,12 @@
+0.1.1
+=====
+
+* Add ChangeLog
+* Add bash and zsh completions
+* Disable colors at exit, just in case
+* Remove commands shortcut, better usage message
+
+0.1.0
+=====
+
+* Initial version
