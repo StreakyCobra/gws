@@ -481,14 +481,14 @@ function cmd_check()
 # Display the usage of this program
 function usage()
 {
-    echo "gws is an helper to manage workspaces which contain git repositories."
-    echo ""
-    echo "Usage: $(basename "$0") <command>"
-    echo ""
-    echo "where <command> is:"
-    echo "    update - Update the workspace to get new repositories from projects list"
-    echo "    status - Print status for all repositories in the workspace"
-    echo "    check  - Check the workspace for all repositories (known/unknown/missing)"
+    echo -e "gws is an helper to manage workspaces which contain git repositories."
+    echo -e ""
+    echo -e "Usage: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF}"
+    echo -e ""
+    echo -e "where <command> is:"
+    echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
+    echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
+    echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
     exit 1
 }
 
