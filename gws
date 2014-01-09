@@ -436,7 +436,7 @@ function cmd_status()
             # Otherwise
             else
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
-                echo -e "${C_GREEN}Ok${C_OK}"
+                echo -e "${C_GREEN}Ok${C_OFF}"
             fi
         done
     done
@@ -516,8 +516,5 @@ case $1 in
         ;;
     *) usage ;;
 esac
-
-# Disable colors
-echo -e "${C_OFF}"
 
 # vim: fdm=marker
