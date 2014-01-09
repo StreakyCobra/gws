@@ -3,6 +3,8 @@
 
 * Add ChangeLog
 * Add bash and zsh completions
+* Change default command to `status`
+* Improve usage message
 * Disable colors at exit, just in case
 * Remove commands shortcut, better usage message
 
