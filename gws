@@ -5,7 +5,7 @@
 # OS:           Probably all linux distributions                               #
 # Requirements: git, bash > 4.0                                                #
 # License:      MIT (See below)                                                #
-# Version:      0.1.1                                                          #
+# Version:      0.1.2-DEV                                                      #
 #                                                                              #
 # 'gws' is the abbreviation of 'Git WorkSpace'.                                #
 # This is an helper to manage workspaces which contains git repositories.      #
