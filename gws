@@ -1,0 +1,518 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Author:       Fabien Dubosson <fabien.dubosson@gmail.com>                    #
+# OS:           Probably all linux distributions                               #
+# Requirements: git, bash > 4.0                                                #
+# License:      MIT (See below)                                                #
+# Version:      0.1.0-DEV                                                      #
+#                                                                              #
+# 'gws' is the abbreviation of 'Git WorkSpace'.                                #
+# This is an helper to manage workspaces which contains git repositories.      #
+################################################################################
+
+# {{{ License
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2014 Fabien Dubosson
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# }}}
+
+# {{{ Bash options
+
+# Debug
+#set -x
+
+# Propagate fail in pipes
+set -o pipefail
+
+# }}}
+
+# {{{ Parameters
+
+# Name of the file containing the projects list
+PROJECTS_FILE=".projects.gws"
+
+# Field separator in the projects list
+FIELD_SEP='|'
+
+# Git name of the origin branch of repositories
+GIT_ORIGIN="origin"
+
+# Git folder name. Used to identify git unlisted repositories
+GIT_FOLDER=".git"
+
+# Indentation for status display
+INDENT="    "
+
+# Max length of branch names. Used to align information about branches in status
+MBL=15
+
+# Colors
+C_RED="\e[91m"
+C_GREEN="\e[92m"
+C_YELLOW="\e[93m"
+C_BLUE="\e[94m"
+C_MAGENTA="\e[95m"
+C_CYAN="\e[96m"
+C_WHITE="\e[97m"
+C_OFF="\e[0m"
+
+# }}}
+
+# {{{ Variables declarations
+
+# Associative array containing the projects
+declare -A projects
+
+# List of sorted projects index of the associative array
+declare -a projects_indexes
+
+# Array used to transmit the list of branches
+declare -a branches
+
+# }}}
+
+# {{{ Projects functions
+
+# Is the current directory the root of workspace?
+function is_project_root()
+{
+    # If there is a project file, this is a project root
+    (ls "$PROJECTS_FILE" 1>/dev/null 2>&1) && return 0
+
+    # If we reach root, and there is no projects file, exit with an error message
+    [[ $(pwd) = "/" ]] && echo "Not a workspace" && exit 1
+
+    # Otherwise return failure
+    return 1
+}
+
+# Add a project to the list of projects
+function add_project()
+{
+    local a
+
+    # Add the project to the list
+    projects[$1]="$2|$3"
+
+    return 0
+}
+
+# Check if the project exists in the list of projects
+function exist_project()
+{
+    local e
+
+    # Loop over all projects index
+    for e in ${projects_indexes[@]}
+    do
+        # If it exist, return success
+        [[ "$e" == "$1" ]] && return 0
+    done
+
+    # Otherwise the project doesn't exist, return failure
+    return 1
+}
+
+# Read the list of projects from the file
+function read_projects()
+{
+    local dir repo upstream
+
+    # Read line by line
+    while read line
+    do
+        # Read the line fields
+        dir=$(echo $line | cut -d${FIELD_SEP} -f1)
+        repo=$(echo $line | cut -d${FIELD_SEP} -f2)
+        upstream=$(echo $line | cut -d${FIELD_SEP} -f3)
+
+        # Skip if the dir is empty
+        if [ -z "$dir" ]; then
+            continue
+        fi
+
+        # Skip if the repo is empty
+        if [ -z "$repo" ]; then
+            continue
+        fi
+
+        # Otherwise add the project to the list
+        add_project $dir $repo $upstream
+    done < $PROJECTS_FILE
+
+    # Extract sorted index of projects
+    readarray -t projects_indexes < <(for a in "${!projects[@]}"; do echo "$a"; done | sort)
+
+    return 0
+}
+
+# Get the repo url from associative array values
+function get_repo_url()
+{
+    echo "$1" | cut -d${FIELD_SEP} -f1
+    return 0
+}
+
+# Get the upstream url from associative array values
+function get_upstream_url()
+{
+    echo "$1" | cut -d${FIELD_SEP} -f2
+    return 0
+}
+
+# Remove elements from a list that have as prefix another element of the same list
+# Used to remove subrepositories, e.g. the list ( foo/bar/ foo/ ). The element
+# foo/bar/ has for prefix foo/, so removing foo/bar because it is a subrepository
+function remove_prefixed()
+{
+    local set_a a b ok
+
+    # Reconstruct array
+    declare -a set_a=( "${!1}" )
+
+    # Filter element that have already a prefix present
+    for a in "${set_a[@]}"
+    do
+        ok=0
+
+        # Look for prefix
+        for b in "${set_a[@]}"
+        do
+            [[ $a =~ ^$b.+ ]] && ok=1
+        done
+
+        # If it is still okay, print the element
+        [[ $ok -eq 0 ]] && echo -n "$a "
+    done
+
+    return 0
+}
+
+# }}}
+
+# {{{ Git functions
+
+# Clone a repository
+function git_clone()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "clone" "$1" "$2" )
+
+    # Run the command and print the output in case of error
+    if ! output=$("${cmd[@]}" 2>&1); then
+        echo "$output"
+        return 1
+    fi
+
+    return 0
+}
+
+# Add an upstream branch to a repository
+function git_add_upstream()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "remote" "add" "upstream" "$2")
+
+    # Run the command and print the output in case of error
+    if ! output=$(cd "$1" && "${cmd[@]}"); then
+        echo "$output"
+        return 1
+    fi
+
+    return 0
+}
+
+# Get the current branch name
+function git_branch()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "branch" )
+
+    # Run the command and print the output
+    (cd "$1" && "${cmd[@]}" | grep "*" | cut -d'*' -f 2 | tr -d ' ')
+
+    return 0
+}
+
+# Get all the branch names, result is passed by global variable
+function git_branches()
+{
+    local cmd output
+
+    # Git command to execute
+    cmd=( "git" "branch" )
+
+    # Run the command and get the output
+    output=$(cd "$1" && "${cmd[@]}" | cut -d'*' -f 2 | tr -d ' ')
+
+    # Saves to the branches array to be accessed by the caller
+    branches=( $output )
+
+    return 0
+}
+
+# Check for changes not commited
+function git_check_uncached_uncommited()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "diff" "--exit-code" )
+
+    # Run the command, and if it succeed, return success
+    (cd "$1" && "${cmd[@]}" 2>&1 1>/dev/null) && return 0
+
+    # Otherwise return failure
+    return 1
+}
+
+# Check for changes not commited but cached
+function git_check_cached_uncommited()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "diff" "--cached" "--exit-code" )
+
+    # Run the command, and if it succeed, return success
+    (cd "$1" && "${cmd[@]}" 2>&1 1>/dev/null) && return 0
+
+    # Otherwise return failure
+    return 1
+}
+
+# Check for changes not commited
+function git_check_branch_origin()
+{
+    local local_cmd remote_cmd local_hash remote_hash
+
+    # Git commands to execute
+    local_cmd=( "git" "rev-parse" "--verify" "$2" )
+    remote_cmd=( "git" "rev-parse" "--verify" "${GIT_ORIGIN}/$2" )
+
+    # Execute the command to get the local hash, If it fails this is weird,
+    # so... exiting
+    local_hash=$(cd "$1"; "${local_cmd[@]}" 2>/dev/null) || return 0
+
+    # Execute the command to get the remote hash. If it fails, that mean there
+    # is no remote branch, return special code
+    remote_hash=$(cd "$1"; "${remote_cmd[@]}" 2>/dev/null) || return 2
+
+    # If the hashes are equal, return success
+    [ $local_hash == $remote_hash ] && return 0
+
+    # Otherwise return failure
+    return 1
+}
+
+# }}}
+
+# {{{ Command functions
+
+# Update command
+function cmd_update()
+{
+    local dir repo upstream
+
+    # For all projects
+    for dir in "${projects_indexes[@]}"
+    do
+        # Get informations about the current project
+        repo=$(get_repo_url ${projects[$dir]})
+        upstream=$(get_upstream_url ${projects[$dir]})
+
+        # Check if repository already exists, and continue if it is the case
+        if [ -d $dir ]; then
+            # Print the information
+            echo -e "Repository ${C_GREEN}$dir${C_OFF} already exists"
+            continue
+        fi
+
+        # Print the information
+        echo -e "Cloning    ${C_YELLOW}$dir${C_OFF}"
+
+        # Clone the repository
+        git_clone $repo $dir
+
+        # If an upstream url is set, add it
+        [[ ! -z "$upstream" ]] && git_add_upstream $upstream
+    done
+
+    return 0
+}
+
+# Status command
+function cmd_status()
+{
+    local dir repo upstream branch branch_done rc
+
+    # For all projects
+    for dir in "${projects_indexes[@]}"
+    do
+        # Get informations about the current project
+        repo=$(get_repo_url ${projects[$dir]})
+        upstream=$(get_upstream_url ${projects[$dir]})
+
+        # Print the project name
+        echo -e "${C_BLUE}$dir${C_OFF}:"
+
+        # Check if repository already exists, and continue if it is not the case
+        if [ ! -d "$dir" ]; then
+            printf "${INDENT}%-${MBL}s${C_YELLOW}%s${C_OFF}\n" " " "Not existing"
+            continue
+        fi
+
+        # Get the current branch name
+        current=$(git_branch "$dir")
+        branch_done=0
+
+        # Check for not commited not cached changes
+        if ! git_check_uncached_uncommited "$dir"; then
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
+            echo -e "${C_RED}Uncommited changes${C_OFF}"
+            branch_done=1
+        # Check for not commited changes
+        elif ! git_check_cached_uncommited "$dir"; then
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
+            echo -e "${C_RED}Uncommited changes (but cached)${C_OFF}"
+            branch_done=1
+        fi
+
+        # List branches of current repository
+        git_branches "$dir"
+
+        # If no branches
+        [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW}%s${C_OFF}\n" " " "Empty repository"
+
+        # Check for difference with origin
+        for branch in "${branches[@]}"
+        do
+            # If the branch is already done, skip it
+            [[ $branch_done -eq 1 ]] && [ "$branch" = "$current" ] && continue
+
+            # Check for not consistant branches
+            git_check_branch_origin $dir $branch;
+
+            # Get the return of the function
+            rc=$?
+
+            # If the hashes are different
+            if [[ "$rc" -eq 1 ]]; then
+                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
+                echo -e "${C_RED}Different from origin/$branch${C_OFF}"
+
+            # If the remote doesn't exist
+            elif [[ "$rc" -eq 2 ]]; then
+                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
+                echo -e "${C_YELLOW}No remote branch origin/$branch${C_OFF}"
+
+            # Otherwise
+            else
+                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
+                echo -e "${C_GREEN}Ok${C_OK}"
+            fi
+        done
+    done
+
+    return 0
+}
+
+# Verify command
+function cmd_check()
+{
+    local found all repo dir
+
+    declare -a found
+    declare -a all
+
+    # Prepare list
+    found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##') )
+    all=( "${found[@]}" "${projects_indexes[@]}" )
+    readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort | uniq)
+    all=( $(remove_prefixed all[@]) )
+
+    # For each found repositories
+    for dir in "${all[@]}"
+    do
+        # Check if the directory exists
+        if [ ! -d "$dir" ]; then
+            echo -e "Repository ${C_YELLOW}$dir${C_OFF} missing"
+            continue
+        fi
+
+        # Check if it is listed as project and print according message
+        if exist_project $dir; then
+            echo -e "Repository ${C_GREEN}$dir${C_OFF} known"
+        else
+            echo -e "Repository ${C_RED}$dir${C_OFF} unknown"
+        fi
+    done
+
+    return 0
+}
+
+# Display the usage of this program
+function usage()
+{
+    echo "Usage: $0 <command>"
+    echo ""
+    echo "where <command> is:"
+    echo "    update , up    — Update the repositories"
+    echo "    status , st    — Status of all repositories"
+    echo "    check  , ch    — Check existing repositories"
+    exit 1
+}
+
+# }}}
+
+# First move to the first parent directory containing a projects file
+while ! is_project_root
+do
+    cd ..
+done
+
+# Then read the list of projects
+read_projects
+
+# Finally select the desired command
+case $1 in
+    "update"|"up")
+        cmd_update
+        ;;
+    "status"|"st")
+        cmd_status
+        ;;
+    "check"|"ch")
+        cmd_check
+        ;;
+    *) usage ;;
+esac
+
+# vim: fdm=marker
