@@ -362,7 +362,7 @@ function cmd_update()
         git_clone $repo $dir
 
         # If an upstream url is set, add it
-        [[ ! -z "$upstream" ]] && git_add_upstream $upstream
+        [[ ! -z "$upstream" ]] && git_add_upstream $dir $upstream
     done
 
     return 0
