@@ -1,1 +1,2 @@
 * Check for untracked files in git repositories
+* Improve used git commands to detect status: (https://stackoverflow.com/questions/2657935/checking-for-a-dirty-index-or-untracked-files-with-git)
