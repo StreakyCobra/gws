@@ -193,6 +193,7 @@ function read_ignored()
             continue
         fi
 
+        pattern=$(echo "$pattern" | sed -e 's/[/&]/\\&/g')
         ignored_patterns+=( "$pattern" )
 
     done < $IGNORE_FILE
@@ -231,7 +232,6 @@ function remove_ignored()
         # Look for prefix
         for b in "${set_b[@]}"
         do
-            b=$(echo "$b" | sed -e 's/[/&]/\\&/g')
             [[ $a =~ $b ]] && ok=1 && break
         done
 
@@ -262,6 +262,7 @@ function remove_prefixed()
         do
             b=$(echo "$b" | sed -e 's/[]\/()$*.^|[]/\\&/g')
             [[ $a =~ ^$b.+ ]] && ok=1 && break
+            [[ "$b" > "$a" ]] && break
         done
 
         # If it is still okay, print the element
@@ -522,7 +523,7 @@ function cmd_check()
     readarray -t projects_ignored < <(comm -23 <(for a in "${projects_all_indexes[@]}"; do echo "$a"; done | sort) <(for a in "${projects_indexes[@]}"; do echo "$a"; done | sort))
 
     # Prepare list of all projects, existing or missing, sorted with no
-    found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##') )
+    found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | sort) )
     found=( $(remove_prefixed found[@]) )
     all=( "${found[@]}" "${projects_all_indexes[@]}" )
     readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort | uniq)
