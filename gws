@@ -52,6 +52,9 @@ set -o pipefail
 # Name of the file containing the projects list
 PROJECTS_FILE=".projects.gws"
 
+# Name of the file containing the ignored patterns
+IGNORE_FILE=".ignore.gws"
+
 # Field separator in the projects list
 FIELD_SEP='|'
 
@@ -87,6 +90,9 @@ declare -A projects
 # List of sorted projects index of the associative array
 declare -a projects_indexes
 
+# Array containing the ignored patterns
+declare -a ignored_patterns
+
 # Array used to transmit the list of branches
 declare -a branches
 
@@ -118,20 +124,25 @@ function add_project()
     return 0
 }
 
+function array_contains()
+{
+    local seeking=$1; shift
+    local in=1
+
+    for element; do
+        if [[ "$element" == "$seeking" ]]; then
+            in=0
+            break
+        fi
+    done
+
+    return $in
+}
+
 # Check if the project exists in the list of projects
 function exist_project()
 {
-    local e
-
-    # Loop over all projects index
-    for e in ${projects_indexes[@]}
-    do
-        # If it exist, return success
-        [[ "$e" == "$1" ]] && return 0
-    done
-
-    # Otherwise the project doesn't exist, return failure
-    return 1
+    array_contains "$1" "${projects_indexes[@]}"
 }
 
 # Read the list of projects from the file
@@ -167,6 +178,28 @@ function read_projects()
     return 0
 }
 
+# Read the list of ignored patterns from the file
+function read_ignored()
+{
+    [[ -e "$IGNORE_FILE" ]] || return 0
+
+    local pattern
+
+    # Read line by line
+    while read -r pattern
+    do
+        # Skip if the line is empty
+        if [ -z "$pattern" ]; then
+            continue
+        fi
+
+        ignored_patterns+=( "$pattern" )
+
+    done < $IGNORE_FILE
+
+    return 0
+}
+
 # Get the repo url from associative array values
 function get_repo_url()
 {
@@ -178,6 +211,34 @@ function get_repo_url()
 function get_upstream_url()
 {
     echo "$1" | cut -d${FIELD_SEP} -f2
+    return 0
+}
+
+# Removed elements from a list that match a pattern in the ignore list
+function remove_ignored()
+{
+    local set_a set_b a b ok
+
+    # Reconstruct array
+    declare -a set_a=( "${!1}" )
+    declare -a set_b=( "${!2}" )
+
+    # Filter element in a that match a pattern in b
+    for a in "${set_a[@]}"
+    do
+        ok=0
+
+        # Look for prefix
+        for b in "${set_b[@]}"
+        do
+            b=$(echo "$b" | sed -e 's/[/&]/\\&/g')
+            [[ $a =~ $b ]] && ok=1
+        done
+
+        # If it is still okay, print the element
+        [[ $ok -eq 0 ]] && echo -n "$a "
+    done
+
     return 0
 }
 
@@ -450,18 +511,32 @@ function cmd_check()
 {
     local found all repo dir
 
+    declare -a projects_all_indexes
+    declare -a projects_ignored
     declare -a found
     declare -a all
 
-    # Prepare list
+    # Create the list of all projects, including ignored ones
+    readarray -t projects_all_indexes < <(for a in "${!projects[@]}"; do echo "$a"; done | sort)
+
+    # Create the list of ignored projects only
+    readarray -t projects_ignored < <(comm -23 <(for a in "${projects_all_indexes[@]}"; do echo "$a"; done | sort) <(for a in "${projects_indexes[@]}"; do echo "$a"; done | sort))
+
+    # Prepare list of all projects, existing or missing, sorted with no
     found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##') )
-    all=( "${found[@]}" "${projects_indexes[@]}" )
+    all=( "${found[@]}" "${projects_all_indexes[@]}" )
     readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort | uniq)
     all=( $(remove_prefixed all[@]) )
 
-    # For each found repositories
+    # For each repositories
     for dir in "${all[@]}"
     do
+        # Check if the directory is ignored
+        if array_contains $dir ${projects_ignored[@]}; then
+            echo -e "Repository ${C_BLUE}$dir${C_OFF} ignored"
+            continue
+        fi
+
         # Check if the directory exists
         if [ ! -d "$dir" ]; then
             echo -e "Repository ${C_YELLOW}$dir${C_OFF} missing"
@@ -501,22 +576,23 @@ do
     cd ..
 done
 
-# Then read the list of projects
+# Then read the list of projects and ignore list
 read_projects
+read_ignored
+
+# Remove ignored projects
+projects_indexes=( $(remove_ignored projects_indexes[@] ignored_patterns[@]) )
 
 # Finally select the desired command
 case $1 in
     "update")
         cmd_update
         ;;
-    "status")
+    ""|"status")
         cmd_status
         ;;
     "check")
         cmd_check
-        ;;
-    "")
-        cmd_status
         ;;
     *) usage ;;
 esac
