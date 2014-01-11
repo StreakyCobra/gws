@@ -199,6 +199,8 @@ function remove_prefixed()
         # Look for prefix
         for b in "${set_a[@]}"
         do
+            # Skip the base directory, to permit it to be checked without filtering all its content
+            [[ "$b" = "." ]] && continue
             [[ $a =~ ^$b.+ ]] && ok=1
         done
 
