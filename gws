@@ -232,7 +232,7 @@ function remove_ignored()
         for b in "${set_b[@]}"
         do
             b=$(echo "$b" | sed -e 's/[/&]/\\&/g')
-            [[ $a =~ $b ]] && ok=1
+            [[ $a =~ $b ]] && ok=1 && break
         done
 
         # If it is still okay, print the element
@@ -261,7 +261,7 @@ function remove_prefixed()
         for b in "${set_a[@]}"
         do
             b=$(echo "$b" | sed -e 's/[]\/()$*.^|[]/\\&/g')
-            [[ $a =~ ^$b.+ ]] && ok=1
+            [[ $a =~ ^$b.+ ]] && ok=1 && break
         done
 
         # If it is still okay, print the element
@@ -440,7 +440,6 @@ function cmd_status()
     do
         # Get informations about the current project
         repo=$(get_repo_url ${projects[$dir]})
-        upstream=$(get_upstream_url ${projects[$dir]})
 
         # Print the project name
         echo -e "${C_BLUE}$dir${C_OFF}:"
@@ -524,9 +523,9 @@ function cmd_check()
 
     # Prepare list of all projects, existing or missing, sorted with no
     found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##') )
+    found=( $(remove_prefixed found[@]) )
     all=( "${found[@]}" "${projects_all_indexes[@]}" )
     readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort | uniq)
-    all=( $(remove_prefixed all[@]) )
 
     # For each repositories
     for dir in "${all[@]}"
