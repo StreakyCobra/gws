@@ -151,7 +151,7 @@ function read_projects()
     local dir repo upstream
 
     # Read line by line
-    while read line
+    while read line || [[ -n "$line" ]]
     do
         # Read the line fields
         dir=$(echo $line | cut -d${FIELD_SEP} -f1)
@@ -186,7 +186,7 @@ function read_ignored()
     local pattern
 
     # Read line by line
-    while read -r pattern
+    while read -r pattern || [[ -n "$pattern" ]]
     do
         # Skip if the line is empty
         if [ -z "$pattern" ]; then
