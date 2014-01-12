@@ -98,6 +98,83 @@ declare -a branches
 
 # }}}
 
+# {{{ General functions
+
+# Check if an array contains a value
+function array_contains()
+{
+    local seeking=$1; shift
+    local in=1
+
+    for element; do
+        if [[ "$element" == "$seeking" ]]; then
+            in=0
+            break
+        fi
+    done
+
+    return $in
+}
+
+# Removed elements from a list that match a pattern in the second list
+function remove_matching()
+{
+    local set_a set_b a b ok
+
+    # Reconstruct array
+    declare -a set_a=( "${!1}" )
+    declare -a set_b=( "${!2}" )
+
+    # Filter element in a that match a pattern in b
+    for a in "${set_a[@]}"
+    do
+        ok=0
+
+        # Look for prefix
+        for b in "${set_b[@]}"
+        do
+            [[ $a =~ $b ]] && ok=1 && break
+        done
+
+        # If it is still okay, print the element
+        [[ $ok -eq 0 ]] && echo -n "$a "
+    done
+
+    return 0
+}
+
+# Remove elements from a list that have as prefix another element of the same list
+# Used to remove subrepositories, e.g. the list ( foo/bar/ foo/ ). The element
+# foo/bar/ has for prefix foo/, so removing foo/bar because it is a subrepository
+function remove_prefixed()
+{
+    local set_a a b ok
+
+    # Reconstruct array
+    declare -a set_a=( "${!1}" )
+
+    # Filter element that have already a prefix present
+    for a in "${set_a[@]}"
+    do
+        ok=0
+
+        # Look for prefix
+        for b in "${set_a[@]}"
+        do
+            b=$(echo "$b" | sed -e 's/[]\/()$*.^|[]/\\&/g')
+            [[ $a =~ ^$b.+ ]] && ok=1 && break
+            [[ "$b" > "$a" ]] && break
+        done
+
+        # If it is still okay, print the element
+        [[ $ok -eq 0 ]] && echo -n "$a "
+    done
+
+    return 0
+}
+
+# }}}
+
 # {{{ Projects functions
 
 # Is the current directory the root of workspace?
@@ -122,21 +199,6 @@ function add_project()
     projects[$1]="$2|$3"
 
     return 0
-}
-
-function array_contains()
-{
-    local seeking=$1; shift
-    local in=1
-
-    for element; do
-        if [[ "$element" == "$seeking" ]]; then
-            in=0
-            break
-        fi
-    done
-
-    return $in
 }
 
 # Check if the project exists in the list of projects
@@ -212,63 +274,6 @@ function get_repo_url()
 function get_upstream_url()
 {
     echo "$1" | cut -d${FIELD_SEP} -f2
-    return 0
-}
-
-# Removed elements from a list that match a pattern in the ignore list
-function remove_ignored()
-{
-    local set_a set_b a b ok
-
-    # Reconstruct array
-    declare -a set_a=( "${!1}" )
-    declare -a set_b=( "${!2}" )
-
-    # Filter element in a that match a pattern in b
-    for a in "${set_a[@]}"
-    do
-        ok=0
-
-        # Look for prefix
-        for b in "${set_b[@]}"
-        do
-            [[ $a =~ $b ]] && ok=1 && break
-        done
-
-        # If it is still okay, print the element
-        [[ $ok -eq 0 ]] && echo -n "$a "
-    done
-
-    return 0
-}
-
-# Remove elements from a list that have as prefix another element of the same list
-# Used to remove subrepositories, e.g. the list ( foo/bar/ foo/ ). The element
-# foo/bar/ has for prefix foo/, so removing foo/bar because it is a subrepository
-function remove_prefixed()
-{
-    local set_a a b ok
-
-    # Reconstruct array
-    declare -a set_a=( "${!1}" )
-
-    # Filter element that have already a prefix present
-    for a in "${set_a[@]}"
-    do
-        ok=0
-
-        # Look for prefix
-        for b in "${set_a[@]}"
-        do
-            b=$(echo "$b" | sed -e 's/[]\/()$*.^|[]/\\&/g')
-            [[ $a =~ ^$b.+ ]] && ok=1 && break
-            [[ "$b" > "$a" ]] && break
-        done
-
-        # If it is still okay, print the element
-        [[ $ok -eq 0 ]] && echo -n "$a "
-    done
-
     return 0
 }
 
@@ -581,7 +586,7 @@ read_projects
 read_ignored
 
 # Remove ignored projects
-projects_indexes=( $(remove_ignored projects_indexes[@] ignored_patterns[@]) )
+projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
 
 # Finally select the desired command
 case $1 in
