@@ -2,7 +2,8 @@
 =====
 
 * Bug corrections
-* Ignore file functionnality
+* Add Ignore file functionnality
+* Add check for untracked files
 
 0.1.1
 =====
