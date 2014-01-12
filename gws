@@ -376,6 +376,24 @@ function git_check_cached_uncommited()
     return 1
 }
 
+# Check for changes not commited but cached
+function git_check_untracked()
+{
+    local cmd nb
+
+    # Git command to execute
+    cmd=( "git" "status" "--porcelain" )
+
+    # Run the command, and if it succeed, return success
+    nb=$(cd "$1" && "${cmd[@]}" 2>/dev/null | grep "^??" | wc -l )
+
+    # If no untracked files return success
+    [[ $nb -eq 0 ]] && return 0
+
+    # Otherwise return failure
+    return 1
+}
+
 # Check for changes not commited
 function git_check_branch_origin()
 {
@@ -469,6 +487,11 @@ function cmd_status()
         elif ! git_check_cached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
             echo -e "${C_RED}Uncommited changes (but cached)${C_OFF}"
+            branch_done=1
+        # Check for untracked files
+        elif ! git_check_untracked "$dir"; then
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
+            echo -e "${C_RED}Dirty (Untracked files)${C_OFF}"
             branch_done=1
         fi
 
