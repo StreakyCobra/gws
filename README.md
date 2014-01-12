@@ -6,7 +6,16 @@ gws
 Functionalities
 ---------------
 
+This script provides some functionalities, in which:
 
+  * It use a list of projects, named `.projects.gws`, containing the name (path)
+    of the project, the repository url, and optionaly an upstream url.
+  * It can use an ignore list, to discard some specific projects, for instance
+    on your home computer which can not accesse work projects.
+  * It clones non-existing repositories
+  * It monitors listed repositories (uncached, uncommitted, untracked, not synced
+    with origin, ...)
+  * It checks the workspace for unlisted repositories
 
 Context
 -------
