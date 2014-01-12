@@ -470,7 +470,7 @@ function cmd_status()
 
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
-            printf "${INDENT}%-${MBL}s${C_YELLOW}%s${C_OFF}\n" " " "Not existing"
+            printf "${INDENT}%-${MBL}s${C_YELLOW}%s${C_OFF}\n" " " "Missing repository"
             continue
         fi
 
@@ -481,12 +481,12 @@ function cmd_status()
         # Check for not commited not cached changes
         if ! git_check_uncached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
-            echo -e "${C_RED}Uncommited changes${C_OFF}"
+            echo -e "${C_RED}Dirty (Uncached changes)${C_OFF}"
             branch_done=1
         # Check for not commited changes
         elif ! git_check_cached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
-            echo -e "${C_RED}Uncommited changes (but cached)${C_OFF}"
+            echo -e "${C_RED}Dirty (Uncommitted changes)${C_OFF}"
             branch_done=1
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
@@ -516,7 +516,7 @@ function cmd_status()
             # If the hashes are different
             if [[ "$rc" -eq 1 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
-                echo -e "${C_RED}Different from origin/$branch${C_OFF}"
+                echo -e "${C_RED}Not in sync with origin/$branch${C_YELLOW}"
 
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
@@ -526,7 +526,7 @@ function cmd_status()
             # Otherwise
             else
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
-                echo -e "${C_GREEN}Ok${C_OFF}"
+                echo -e "${C_GREEN}Clean${C_OFF}"
             fi
         done
     done
