@@ -3,14 +3,23 @@ gws
 
 `gws` is a bash helper to manage workspaces composed of git repositories.
 
+QuickStart
+----------
+
+  * Create a file named `.projects.gws` in the desired folder.
+  * Fill it with the projects informations (see below).
+  * Get all repositories with `gws update`.
+  * Hack a little bit.
+  * Show the status of the workspace with `gws` (`gws status` also works).
+
 Functionalities
 ---------------
 
 This script offers some functionalities, among which:
 
   * It uses a list of projects, named `.projects.gws`, containing many projects
-    described by its name, its repository url, and optionaly an upstream url,
-    like:
+    described by their names, they repository urls, and optionaly an upstream
+    url, like:
 
         work/theSoftware | git@github.com:You/theSoftware.git
         perso/gws        | git@github.com:You/gws.git         | git@github.com:StreakyCobra/gws.git
@@ -18,6 +27,8 @@ This script offers some functionalities, among which:
   * It can use an ignore list, named `.ignore.gws`, containing regular
     expressions which discard some specific projects, for instance to disable on
     your home computer the work-related projects.
+
+        ^work/
 
   * It can clone non-existing repositories from the projects list (but not
     supress them in case of removal, you have to do it yourself for safety
@@ -39,6 +50,14 @@ This script offers some functionalities, among which:
     ones).
 
         gws check
+
+Some informations that can bu useful
+------------------------------------
+
+  * You can use the command from any subfolder of the workspace, as git does for
+    instance.
+
+  *
 
 Context
 -------
