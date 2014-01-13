@@ -1,8 +1,8 @@
 gws
 ===
 
-`gws` is a __KISS, bash, colorful,__ helper to manage workspaces composed of git
-repositories.
+`gws` is a KISS, bash, colorful, vundle-inspired helper to manage workspaces
+composed of git repositories.
 
 QuickStart
 ----------
@@ -38,8 +38,8 @@ This tool offers some functionalities, among which:
 
         gws update
 
-  * It can monitor all listed repositories in one command (uncommitted, untracked,
-    branches not synced with origin, ...).
+  * It can monitor all listed repositories in one command (uncommitted changes,
+    untracked changes, branches not synced with origin, ...).
 
         gws status
 
@@ -48,9 +48,11 @@ This tool offers some functionalities, among which:
         gws
 
   * It can check the workspace for all repositories (known, unknown, ignored,
-    missing).
+    missing). Note: This command can be quite slow in large repositories (e.g.
+    home folder, because it need to search entire space for unknown repository.
 
         gws check
+
 
 Syntaxes
 --------
@@ -92,11 +94,17 @@ projects name. Some examples:
 
         a
 
-Some informations that can be useful
-------------------------------------
+Some misc informations
+----------------------
 
-  * You can use the command from any subfolder of the workspace, as git does for
-    instance.
+  * Except for cloning repositories, this script has not for goal to interact
+    with your repositories. So no `pull all`, `push all`, `delete all unused`,
+    functionnality will be implemented. This will imply too much checking to
+    ensure no loose of informations. Instead, just look the satus of
+    the repositories and do needed actions manually on regulare basis.
+
+  * You can use the commands from any subfolder of the workspace (as git does
+    for instance).
 
   * The file `.projects.gws` can easily be verisonned to sync the list of
     projects on which you are working between different computers.
@@ -107,6 +115,14 @@ Some informations that can be useful
 
   * `gws check` can be quite slow (for instance if the workspace is the home
     folder) because it searches all existing git projects recursively.
+
+Future
+------
+
+This project aims to stay simple. I will try to keep the project as alive as
+possible for a bash script, by correcting bugs and maybe some improvements.
+Also, maybe one day, if I have time, I will rewrite all this script in python or
+other more maintainable language.
 
 Context
 -------
@@ -145,3 +161,4 @@ a helper to sync, monitor and check workspaces.
 
 I thought it can be useful to other people, so I made a little cleanup, write
 a small documentation, and there it is. I hope you will enjoy it!
+
