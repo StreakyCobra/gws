@@ -1,3 +1,2 @@
-* Improve git commands to detect status: (https://stackoverflow.com/questions/2657935/checking-for-a-dirty-index-or-untracked-files-with-git)
 * Check command: ignore recursively folder containing a workspace (.projects.gws)
 * Command to generate a list the first time from the existing repository
