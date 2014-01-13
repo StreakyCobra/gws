@@ -49,6 +49,9 @@ set -o pipefail
 
 # {{{ Parameters
 
+# Version number
+VERSION="0.1.2-DEV"
+
 # Name of the file containing the projects list
 PROJECTS_FILE=".projects.gws"
 
@@ -634,6 +637,9 @@ case $1 in
         ;;
     "check")
         cmd_check
+        ;;
+    "--version"|"-v")
+        echo -e "gws version ${C_RED}$VERSION${C_OFF}"
         ;;
     *) usage ;;
 esac
