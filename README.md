@@ -59,10 +59,21 @@ Syntaxes
 
 One project per line. Must be of the form:
 
-    name | url [ | upstream ]
+    name | url
 
-There can be blank lines, but no comments or anything else. The urls are passed
-to git as-is, so can be anything accepted by git, but must not contain `|`.
+or
+
+    name | url | upstream
+
+knowing that:
+
+  * There can be blank lines, but no comments or anything else.
+
+  * The name can be anything not containing `|`. Use `/` to group projects in
+    a folder hierarchy.
+
+  * The urls are passed to git as-is, so can be anything accepted by git, but
+    must not contain `|`.
 
 ### .ignore.gws
 
