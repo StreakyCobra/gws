@@ -471,7 +471,6 @@ function cmd_status()
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Missing repository"
-            echo ""
             continue
         fi
 
@@ -543,8 +542,6 @@ function cmd_status()
                 echo -e "${C_GREEN}Clean${C_OFF}"
             fi
         done
-
-        echo ""
     done
 
     return 0
