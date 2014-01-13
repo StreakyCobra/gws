@@ -1,7 +1,8 @@
 gws
 ===
 
-`gws` is a bash helper to manage workspaces composed of git repositories.
+`gws` is a __KISS, bash, colorful,__ helper to manage workspaces composed of git
+repositories.
 
 QuickStart
 ----------
@@ -12,14 +13,14 @@ QuickStart
   * Hack a little bit.
   * Show the status of the workspace with `gws` (`gws status` also works).
 
-Functionalities
----------------
+How it works
+------------
 
-This script offers some functionalities, among which:
+This tool offers some functionalities, among which:
 
   * It uses a list of projects, named `.projects.gws`, containing many projects
-    described by their names, they repository urls, and optionaly an upstream
-    url, like:
+    described by their names, their repository urls, and optionaly an upstream
+    url (mapped as a git remote named `upstream`), like:
 
         work/theSoftware | git@github.com:You/theSoftware.git
         perso/gws        | git@github.com:You/gws.git         | git@github.com:StreakyCobra/gws.git
@@ -46,18 +47,55 @@ This script offers some functionalities, among which:
 
         gws
 
-  * It can check the workspace for unlisted repositories (for example removed
-    ones).
+  * It can check the workspace for all repositories (known, unknown, ignored,
+    missing).
 
         gws check
 
-Some informations that can bu useful
+Syntaxes
+--------
+
+### .projects.gws
+
+One project per line. Must be of the form:
+
+    name | url [ | upstream ]
+
+There can be blank lines, but no comments or anything else. The urls are passed
+to git as-is, so can be anything accepted by git, but must not contain `|`.
+
+### .ignore.gws
+
+One regular expression per line. The regular expression will be matched to
+projects name. Some examples:
+
+  * Ignore the folder `work` and all its subfolders:
+
+        ^work/
+
+  * Ignore all repositories ending with `-work`:
+
+        -work$
+
+  * Ignore all repo containing an `a` inside:
+
+        a
+
+Some informations that can be useful
 ------------------------------------
 
   * You can use the command from any subfolder of the workspace, as git does for
     instance.
 
-  *
+  * The file `.projects.gws` can easily be verisonned to sync the list of
+    projects on which you are working between different computers.
+
+  * The file `.ignore.gws` permit to keep the same list on all computer, but to
+    localy disable some projects (for instance work-related projects at home
+    because they are unneeded or even not accessible).
+
+  * `gws check` can be quite slow (for instance if the workspace is the home
+    folder) because it searches all existing git projects recursively.
 
 Context
 -------
