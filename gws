@@ -5,10 +5,10 @@
 # OS:           Probably all linux distributions                               #
 # Requirements: git, bash > 4.0                                                #
 # License:      MIT (See below)                                                #
-# Version:      0.1.2-DEV                                                      #
+# Version:      0.1.2                                                          #
 #                                                                              #
 # 'gws' is the abbreviation of 'Git WorkSpace'.                                #
-# This is an helper to manage workspaces which contains git repositories.      #
+# This is an helper to manage workspaces which contain git repositories.       #
 ################################################################################
 
 # {{{ License
@@ -50,7 +50,7 @@ set -o pipefail
 # {{{ Parameters
 
 # Version number
-VERSION="0.1.2-DEV"
+VERSION="0.1.2"
 
 # Name of the file containing the projects list
 PROJECTS_FILE=".projects.gws"
