@@ -68,7 +68,7 @@ GIT_FOLDER=".git"
 INDENT="    "
 
 # Max length of branch names. Used to align information about branches in status
-MBL=15
+MBL=25
 
 # Colors
 C_RED="\e[91m"
@@ -470,27 +470,34 @@ function cmd_status()
 
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
-            printf "${INDENT}%-${MBL}s${C_YELLOW}%s${C_OFF}\n" " " "Missing repository"
+            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Missing repository"
+            echo ""
             continue
         fi
 
         # Get the current branch name
         current=$(git_branch "$dir")
+        # Cut branch name
+        if [ ${#current} -gt $(($MBL - 3)) ]; then
+            display_current="${current:0:$(($MBL - 3))}…"
+        else
+            display_current="$current"
+        fi
         branch_done=0
 
         # Check for not commited not cached changes
         if ! git_check_uncached_uncommited "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
             echo -e "${C_RED}Dirty (Uncached changes)${C_OFF}"
             branch_done=1
         # Check for not commited changes
         elif ! git_check_cached_uncommited "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
             echo -e "${C_RED}Dirty (Uncommitted changes)${C_OFF}"
             branch_done=1
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$current:"
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
             echo -e "${C_RED}Dirty (Untracked files)${C_OFF}"
             branch_done=1
         fi
@@ -499,11 +506,18 @@ function cmd_status()
         git_branches "$dir"
 
         # If no branches
-        [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW}%s${C_OFF}\n" " " "Empty repository"
+        [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
 
         # Check for difference with origin
         for branch in "${branches[@]}"
         do
+            # Cut branch name
+            if [ ${#branch} -gt $(($MBL - 3)) ]; then
+                display_branch="${branch:0:$(($MBL - 3))}…"
+            else
+                display_branch="$branch"
+            fi
+
             # If the branch is already done, skip it
             [[ $branch_done -eq 1 ]] && [ "$branch" = "$current" ] && continue
 
@@ -515,20 +529,22 @@ function cmd_status()
 
             # If the hashes are different
             if [[ "$rc" -eq 1 ]]; then
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
+                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -e "${C_RED}Not in sync with origin/$branch${C_YELLOW}"
 
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
+                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -e "${C_YELLOW}No remote branch origin/$branch${C_OFF}"
 
             # Otherwise
             else
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF}" "$branch:"
+                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -e "${C_GREEN}Clean${C_OFF}"
             fi
         done
+
+        echo ""
     done
 
     return 0
