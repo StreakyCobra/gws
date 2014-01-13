@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>gws by StreakyCobra</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>gws</h1>
+        <h2>A helper to manage workspaces composed of git repositories.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/StreakyCobra/gws/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/StreakyCobra/gws/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/StreakyCobra/gws" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="gws" class="anchor" href="#gws"><span class="octicon octicon-link"></span></a>gws</h1>
+
+<p><code>gws</code> is a KISS, bash, colorful, vundle-inspired helper to manage workspaces
+composed of git repositories.</p>
+
+<h2>
+<a name="quickstart" class="anchor" href="#quickstart"><span class="octicon octicon-link"></span></a>QuickStart</h2>
+
+<ul>
+<li>Create a file named <code>.projects.gws</code> in the desired folder.</li>
+<li>Fill it with the projects informations (see below).</li>
+<li>Get all repositories with <code>gws update</code>.</li>
+<li>Hack a little bit.</li>
+<li>Show the status of the workspace with <code>gws</code> (<code>gws status</code> also works).</li>
+</ul><h2>
+<a name="how-it-works" class="anchor" href="#how-it-works"><span class="octicon octicon-link"></span></a>How it works</h2>
+
+<p>This tool offers some functionalities, among which:</p>
+
+<ul>
+<li>
+<p>It uses a list of projects, named <code>.projects.gws</code>, containing many projects
+described by their names, their repository urls, and optionaly an upstream
+url (mapped as a git remote named <code>upstream</code>), like:</p>
+
+<pre><code>work/theSoftware | git@github.com:You/theSoftware.git
+perso/gws        | git@github.com:You/gws.git         | git@github.com:StreakyCobra/gws.git
+</code></pre>
+</li>
+<li>
+<p>It can use an ignore list, named <code>.ignore.gws</code>, containing regular
+expressions which discard some specific projects, for instance to disable on
+your home computer the work-related projects.</p>
+
+<pre><code>^work/
+</code></pre>
+</li>
+<li>
+<p>It can clone non-existing repositories from the projects list (but not
+supress them in case of removal, you have to do it yourself for safety
+reason. Notice that there is the <code>check</code> functionnality to identify
+unlisted repositories).</p>
+
+<pre><code>gws update
+</code></pre>
+</li>
+<li>
+<p>It can monitor all listed repositories in one command (uncommitted changes,
+untracked changes, branches not synced with origin, ...).</p>
+
+<pre><code>gws status
+</code></pre>
+
+<p>or simply</p>
+
+<pre><code>gws
+</code></pre>
+</li>
+<li>
+<p>It can check the workspace for all repositories (known, unknown, ignored,
+missing). Note: This command can be quite slow in large repositories (e.g.
+home folder, because it need to search entire space for unknown repository.</p>
+
+<pre><code>gws check
+</code></pre>
+</li>
+</ul><h2>
+<a name="syntaxes" class="anchor" href="#syntaxes"><span class="octicon octicon-link"></span></a>Syntaxes</h2>
+
+<h3>
+<a name="projectsgws" class="anchor" href="#projectsgws"><span class="octicon octicon-link"></span></a>.projects.gws</h3>
+
+<p>One project per line. Must be of the form:</p>
+
+<pre><code>name | url
+</code></pre>
+
+<p>or</p>
+
+<pre><code>name | url | upstream
+</code></pre>
+
+<p>knowing that:</p>
+
+<ul>
+<li><p>There can be blank lines, but no comments or anything else.</p></li>
+<li><p>The name can be anything not containing <code>|</code>. Use <code>/</code> to group projects in
+a folder hierarchy.</p></li>
+<li><p>The urls are passed to git as-is, so can be anything accepted by git, but
+must not contain <code>|</code>.</p></li>
+</ul><h3>
+<a name="ignoregws" class="anchor" href="#ignoregws"><span class="octicon octicon-link"></span></a>.ignore.gws</h3>
+
+<p>One regular expression per line. The regular expression will be matched to
+projects name. Some examples:</p>
+
+<ul>
+<li>
+<p>Ignore the folder <code>work</code> and all its subfolders:</p>
+
+<pre><code>^work/
+</code></pre>
+</li>
+<li>
+<p>Ignore all repositories ending with <code>-work</code>:</p>
+
+<pre><code>-work$
+</code></pre>
+</li>
+<li>
+<p>Ignore all repo containing an <code>a</code> inside:</p>
+
+<pre><code>a
+</code></pre>
+</li>
+</ul><h2>
+<a name="some-misc-informations" class="anchor" href="#some-misc-informations"><span class="octicon octicon-link"></span></a>Some misc informations</h2>
+
+<ul>
+<li><p>Except for cloning repositories, this script has not for goal to interact
+with your repositories. So no <code>pull all</code>, <code>push all</code>, <code>delete all unused</code>,
+functionnality will be implemented. This will imply too much checking to
+ensure no loose of informations. Instead, just look the satus of
+the repositories and do needed actions manually on regulare basis.</p></li>
+<li><p>You can use the commands from any subfolder of the workspace (as git does
+for instance).</p></li>
+<li><p>The file <code>.projects.gws</code> can easily be verisonned to sync the list of
+projects on which you are working between different computers.</p></li>
+<li><p>The file <code>.ignore.gws</code> permit to keep the same list on all computer, but to
+localy disable some projects (for instance work-related projects at home
+because they are unneeded or even not accessible).</p></li>
+<li><p><code>gws check</code> can be quite slow (for instance if the workspace is the home
+folder) because it searches all existing git projects recursively.</p></li>
+</ul><h2>
+<a name="future" class="anchor" href="#future"><span class="octicon octicon-link"></span></a>Future</h2>
+
+<p>This project aims to stay simple. I will try to keep the project as alive as
+possible for a bash script, by correcting bugs and maybe some improvements.
+Also, maybe one day, if I have time, I will rewrite all this script in python or
+other more maintainable language.</p>
+
+<h2>
+<a name="context" class="anchor" href="#context"><span class="octicon octicon-link"></span></a>Context</h2>
+
+<p>If you are, like me, a Linux programmer/hacker/coder who use heavily git, you
+certainly have a directory in your home folder named <code>dev</code>, <code>workspace</code>, <code>code</code>
+or something else that contains all the projects you are working on. For
+instance my currently is:</p>
+
+<pre><code>dev
+├── archlinux
+│   ├── aur
+│   └── habs
+├── perso
+│   ├── gws
+│   ├── imaxplore
+│   └── teafree
+├── config
+</code></pre>
+
+<p>where <code>aur</code>, <code>habs</code>, <code>gws</code>, <code>imaxplore</code>, <code>teafree</code>, <code>config</code> are git
+repositories.</p>
+
+<p>Since I use at least two different computers, one laptop and one at work, I like
+to have the same folder structure on both. Of course remembering which project
+was added recently and in which folder is tedious.</p>
+
+<p>So I started to thing about using git submodules to register all projects on
+which I am working and syncing them with git between the two computers. But
+clearly git submodules are not usable because they are working on specific
+commit and are not following branches.</p>
+
+<p>No worry. The problem is pretty trivial, so I decided to start write a little
+bash script that read a simple list of repositories, and clone them if they
+don't exist. And then, commit by commit, the script as grown to finally become
+a helper to sync, monitor and check workspaces.</p>
+
+<p>I thought it can be useful to other people, so I made a little cleanup, write
+a small documentation, and there it is. I hope you will enjoy it!</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
