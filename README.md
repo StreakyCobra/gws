@@ -113,7 +113,7 @@ Some misc informations
     with your repositories. So no `pull all`, `push all`, `delete all unused`,
     functionnality will be implemented. This will imply too much checking to
     ensure no loose of informations. Instead, just look the satus of
-    the repositories and do needed actions manually on regulare basis.
+    the repositories and do needed actions manually on regular basis.
 
   * You can use the commands from any subfolder of the workspace (as git does
     for instance).
