@@ -301,6 +301,23 @@ function git_clone()
     return 0
 }
 
+# Fetch from the origin
+function git_fetch()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "fetch" )
+
+    # Run the command and print the output in case of error
+    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
+        echo "$output"
+        return 1
+    fi
+
+    return 0
+}
+
 # Add an upstream branch to a repository
 function git_add_upstream()
 {
@@ -510,6 +527,9 @@ function cmd_status()
         # If no branches
         [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
 
+        # Fetch origin to compare with remote
+        [[ $1 -eq 1 ]] && git_fetch "$dir"
+
         # Check for difference with origin
         for branch in "${branches[@]}"
         do
@@ -633,7 +653,10 @@ case $1 in
         cmd_update
         ;;
     ""|"status")
-        cmd_status
+        cmd_status 0
+        ;;
+    "fetch")
+        cmd_status 1
         ;;
     "check")
         cmd_check
