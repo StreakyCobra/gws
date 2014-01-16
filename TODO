@@ -1,3 +1,2 @@
 * Check command: ignore recursively folder containing a workspace (.projects.gws)
 * Command to generate a list the first time from the existing repository
-* Fetch origin to check for the need to pull repository - 2014-01-16
