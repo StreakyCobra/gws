@@ -321,6 +321,23 @@ function git_fetch()
     return 0
 }
 
+# Fast-forward from the origin
+function git_fast_forward()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "pull" "--ff-only" )
+
+    # Run the command and print the output in case of error
+    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
+        echo "$output"
+        return 1
+    fi
+
+    return 0
+}
+
 # Add an upstream branch to a repository
 function git_add_upstream()
 {
@@ -570,8 +587,11 @@ function cmd_status()
         # If no branches
         [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
 
-        # Fetch origin to compare with remote
+        # Fetch origin
         [[ $1 -eq 1 ]] && git_fetch "$dir"
+
+        # Fast forward from origin
+        [[ $1 -eq 2 ]] && git_fast_forward "$dir"
 
         # Check for difference with origin
         for branch in "${branches[@]}"
@@ -673,6 +693,7 @@ function usage()
     echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
     echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
     echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
+    echo -e "    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
     echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
     exit 1
 }
@@ -705,6 +726,9 @@ case $1 in
         ;;
     "fetch")
         cmd_status 1
+        ;;
+    "ff")
+        cmd_status 2
         ;;
     "check")
         cmd_check

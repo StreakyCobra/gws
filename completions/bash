@@ -3,7 +3,7 @@
 _gws()
 {
     local cur="${COMP_WORDS[COMP_CWORD]}"
-    COMPREPLY=( $(compgen -W "init update status fetch check" -- $cur) )
+    COMPREPLY=( $(compgen -W "init update status fetch ff check" -- $cur) )
 }
 
 complete -F _gws gws

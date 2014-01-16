@@ -3,6 +3,7 @@
 
 * Add `init` command
 * Add `fetch` command
+* Add `ff` command
 
 0.1.2
 =====
