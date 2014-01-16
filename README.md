@@ -15,6 +15,13 @@ QuickStart
 
   * Create a file named `.projects.gws` in the desired folder.
   * Fill it with the projects informations (see below).
+
+or
+
+  * Let it detect repositories and create the `.projects.gws` with: `gws init`
+
+and then
+
   * Get all repositories with `gws update`.
   * Hack a little bit.
   * Show the status of the workspace with `gws` (`gws status` also works).
@@ -36,6 +43,11 @@ This tool offers some functionalities, among which:
     your home computer the work-related projects.
 
         ^work/
+
+  * It can detect already existing repositories and create the projects list
+    from that.
+
+        gws init
 
   * It can clone non-existing repositories from the projects list (but not
     supress them in case of removal, you have to do it yourself for safety

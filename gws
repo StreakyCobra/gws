@@ -52,6 +52,9 @@ set -o pipefail
 # Version number
 VERSION="0.1.3-DEV"
 
+# Starting directory
+START_PWD="$(pwd)"
+
 # Name of the file containing the projects list
 PROJECTS_FILE=".projects.gws"
 
@@ -335,6 +338,20 @@ function git_add_upstream()
     return 0
 }
 
+# Get the origin url
+function git_remote()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "remote" "-v" )
+
+    # Run the command and print the output
+    (cd "$1" && "${cmd[@]}" | grep "$2" | head -n 1 | cut -d' ' -f1 | cut -d'	' -f 2 | tr -d ' ')
+
+    return 0
+}
+
 # Get the current branch name
 function git_branch()
 {
@@ -441,6 +458,32 @@ function git_check_branch_origin()
 # }}}
 
 # {{{ Command functions
+
+# Init command
+function cmd_init()
+{
+    # Go back to start directory
+    cd "$START_PWD"
+
+    # Check if already a workspace
+    [[ -f ${PROJECTS_FILE} ]] && echo "Already a workspace" && return 1
+
+    local found
+    declare -a found
+
+    # Prepare the list of all existing projects, sorted
+    found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | sort) )
+    found=( $(remove_prefixed found[@]) )
+
+    # Create the list of repositories
+    output=$(for dir in "${found[@]}"
+    do
+        echo "$dir | $(git_remote $dir 'origin') | $(git_remote $dir 'upstream')"
+    done)
+
+    # Write the file if it is not empty
+    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) || echo "No repositories found"
+}
 
 # Update command
 function cmd_update()
@@ -626,6 +669,7 @@ function usage()
     echo -e "Usage: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF}"
     echo -e ""
     echo -e "where <command> is:"
+    echo -e "    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
     echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
     echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
     echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
@@ -650,6 +694,9 @@ projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
 
 # Finally select the desired command
 case $1 in
+    "init")
+        cmd_init
+        ;;
     "update")
         cmd_update
         ;;
