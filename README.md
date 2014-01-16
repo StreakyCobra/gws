@@ -53,6 +53,12 @@ This tool offers some functionalities, among which:
 
         gws
 
+  * It can fetch the modifications from origin for all repositories, it is
+    usefull te be sure to have the latest modifications, for instance to take
+    the train with no internet connection:
+
+        gws fetch
+
   * It can check the workspace for all repositories (known, unknown, ignored,
     missing). Note: This command can be quite slow in large repositories (e.g.
     home folder, because it need to search entire space for unknown repository.

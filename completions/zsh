@@ -1,4 +1,4 @@
 #compdef gws
 # Zsh completion for gws
 
-_arguments "1: :(update status check)"
+_arguments "1: :(update status fetch check)"

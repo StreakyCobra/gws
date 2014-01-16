@@ -628,6 +628,7 @@ function usage()
     echo -e "where <command> is:"
     echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
     echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
+    echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
     echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
     exit 1
 }
