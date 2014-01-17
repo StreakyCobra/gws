@@ -588,10 +588,10 @@ function cmd_status()
         [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
 
         # Fetch origin
-        [[ $1 -eq 1 ]] && git_fetch "$dir"
+        [[ $1 -eq 1 ]] && git_fetch "$dir" && echo -e "${C_CYAN}Fetched from origin${C_OFF}"
 
         # Fast forward from origin
-        [[ $1 -eq 2 ]] && git_fast_forward "$dir"
+        [[ $1 -eq 2 ]] && git_fast_forward "$dir" && echo -e "${C_CYAN}Fast-forwarded from origin${C_OFF}"
 
         # Check for difference with origin
         for branch in "${branches[@]}"
