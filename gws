@@ -312,9 +312,10 @@ function git_fetch()
     # Git command to execute
     cmd=( "git" "fetch" )
 
-    # Run the command and print the output in case of error
-    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
-        echo "$output"
+    # Execute the command
+    output=$(cd "$1" && "${cmd[@]}" 2>&1)
+
+    if [ -z "$output" ] ; then
         return 1
     fi
 
@@ -329,9 +330,10 @@ function git_fast_forward()
     # Git command to execute
     cmd=( "git" "pull" "--ff-only" )
 
-    # Run the command and print the output in case of error
-    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
-        echo "$output"
+    # Execute the command
+    output=$(cd "$1" && "${cmd[@]}" 2>&1)
+
+    if [ "$output" = "Already up-to-date." ] ; then
         return 1
     fi
 
@@ -588,10 +590,10 @@ function cmd_status()
         [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
 
         # Fetch origin
-        [[ $1 -eq 1 ]] && git_fetch "$dir" && echo -e "${C_CYAN}Fetched from origin${C_OFF}"
+        [[ $1 -eq 1 ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Fetched from origin"
 
         # Fast forward from origin
-        [[ $1 -eq 2 ]] && git_fast_forward "$dir" && echo -e "${C_CYAN}Fast-forwarded from origin${C_OFF}"
+        [[ $1 -eq 2 ]] && git_fast_forward "$dir" && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Fast-forwarded from origin"
 
         # Check for difference with origin
         for branch in "${branches[@]}"
