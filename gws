@@ -590,10 +590,10 @@ function cmd_status()
         [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
 
         # Fetch origin
-        [[ $1 -eq 1 ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Fetched from origin"
+        [[ $1 -eq 1 ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
 
         # Fast forward from origin
-        [[ $1 -eq 2 ]] && git_fast_forward "$dir" && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Fast-forwarded from origin"
+        [[ $1 -eq 2 ]] && git_fast_forward "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fast-forwarded from origin"
 
         # Check for difference with origin
         for branch in "${branches[@]}"
