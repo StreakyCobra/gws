@@ -313,7 +313,9 @@ function git_fetch()
     cmd=( "git" "fetch" )
 
     # Execute the command
-    output=$(cd "$1" && "${cmd[@]}" 2>&1)
+    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
+        return 1
+    fi
 
     if [ -z "$output" ] ; then
         return 1
@@ -331,7 +333,9 @@ function git_fast_forward()
     cmd=( "git" "pull" "--ff-only" )
 
     # Execute the command
-    output=$(cd "$1" && "${cmd[@]}" 2>&1)
+    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
+        return 1
+    fi
 
     if [ "$output" = "Already up-to-date." ] ; then
         return 1
