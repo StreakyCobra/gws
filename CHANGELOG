@@ -4,6 +4,7 @@
 * Add `init` command
 * Add `fetch` command
 * Add `ff` command
+* Disable color when output is not a terminal (e.g. pipes)
 
 0.1.2
 =====

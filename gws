@@ -77,14 +77,25 @@ INDENT="    "
 MBL=25
 
 # Colors
-C_RED="\e[91m"
-C_GREEN="\e[92m"
-C_YELLOW="\e[93m"
-C_BLUE="\e[94m"
-C_MAGENTA="\e[95m"
-C_CYAN="\e[96m"
-C_WHITE="\e[97m"
-C_OFF="\e[0m"
+if [[ -t 1 ]]; then
+    C_RED="\e[91m"
+    C_GREEN="\e[92m"
+    C_YELLOW="\e[93m"
+    C_BLUE="\e[94m"
+    C_MAGENTA="\e[95m"
+    C_CYAN="\e[96m"
+    C_WHITE="\e[97m"
+    C_OFF="\e[0m"
+else
+    C_RED=""
+    C_GREEN=""
+    C_YELLOW=""
+    C_BLUE=""
+    C_MAGENTA=""
+    C_CYAN=""
+    C_WHITE=""
+    C_OFF=""
+fi
 
 # }}}
 
