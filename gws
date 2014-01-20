@@ -76,6 +76,11 @@ INDENT="    "
 # Max length of branch names. Used to align information about branches in status
 MBL=25
 
+# Status command
+S_NONE=0
+S_FETCH=1
+S_FAST_FORWARD=2
+
 # Colors
 if [[ -t 1 ]]; then
     C_RED="\e[91m"
@@ -500,7 +505,7 @@ function cmd_init()
     cd "$START_PWD"
 
     # Check if already a workspace
-    [[ -f ${PROJECTS_FILE} ]] && echo "Already a workspace" && return 1
+    [[ -f ${PROJECTS_FILE} ]] && echo -e "${C_RED}Already a workspace.${C_OFF}" && return 1
 
     local found
     declare -a found
@@ -516,7 +521,11 @@ function cmd_init()
     done)
 
     # Write the file if it is not empty
-    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) || echo "No repositories found"
+    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_GREEN}Workspace file «.projects.gws» created.${C_OFF}" && return 0
+
+    # Display informations messages
+    echo -e "${C_YELLOW}No repository found.${C_OFF}"
+    return 1
 }
 
 # Update command
@@ -531,21 +540,29 @@ function cmd_update()
         repo=$(get_repo_url ${projects[$dir]})
         upstream=$(get_upstream_url ${projects[$dir]})
 
+        # Print the repository
+        echo -e "${C_BLUE}$dir${C_OFF}:"
+
         # Check if repository already exists, and continue if it is the case
         if [ -d $dir ]; then
             # Print the information
-            echo -e "Repository ${C_GREEN}$dir${C_OFF} already exists"
+            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Already exist"
             continue
         fi
 
         # Print the information
-        echo -e "Cloning    ${C_YELLOW}$dir${C_OFF}"
+        printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
 
         # Clone the repository
-        git_clone $repo $dir
+        if ! git_clone $repo $dir; then
+            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
+            return 1
+        fi
 
         # If an upstream url is set, add it
         [[ ! -z "$upstream" ]] && git_add_upstream $dir $upstream
+
+        printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
     done
 
     return 0
@@ -573,6 +590,7 @@ function cmd_status()
 
         # Get the current branch name
         current=$(git_branch "$dir")
+
         # Cut branch name
         if [ ${#current} -gt $(($MBL - 3)) ]; then
             display_current="${current:0:$(($MBL - 3))}…"
@@ -605,10 +623,10 @@ function cmd_status()
         [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
 
         # Fetch origin
-        [[ $1 -eq 1 ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
+        [[ $1 -eq $S_FETCH ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
 
         # Fast forward from origin
-        [[ $1 -eq 2 ]] && git_fast_forward "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fast-forwarded from origin"
+        [[ $1 -eq $S_FAST_FORWARD ]] && git_fast_forward "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fast-forwarded from origin"
 
         # Check for difference with origin
         for branch in "${branches[@]}"
@@ -675,23 +693,26 @@ function cmd_check()
     # For each repositories
     for dir in "${all[@]}"
     do
+        # Print the repository
+        echo -e "${C_BLUE}$dir${C_OFF}:"
+
         # Check if the directory is ignored
         if array_contains $dir ${projects_ignored[@]}; then
-            echo -e "Repository ${C_BLUE}$dir${C_OFF} ignored"
+            printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Ignored"
             continue
         fi
 
         # Check if the directory exists
         if [ ! -d "$dir" ]; then
-            echo -e "Repository ${C_YELLOW}$dir${C_OFF} missing"
+            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Missing"
             continue
         fi
 
         # Check if it is listed as project and print according message
         if exist_project $dir; then
-            echo -e "Repository ${C_GREEN}$dir${C_OFF} known"
+            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "known"
         else
-            echo -e "Repository ${C_RED}$dir${C_OFF} unknown"
+            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "missing"
         fi
     done
 
@@ -739,13 +760,13 @@ case $1 in
         cmd_update
         ;;
     ""|"status")
-        cmd_status 0
+        cmd_status $S_NONE
         ;;
     "fetch")
-        cmd_status 1
+        cmd_status $S_FETCH
         ;;
     "ff")
-        cmd_status 2
+        cmd_status $S_FAST_FORWARD
         ;;
     "check")
         cmd_check
