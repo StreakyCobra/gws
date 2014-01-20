@@ -5,6 +5,7 @@
 * Add `fetch` command
 * Add `ff` command
 * Disable color when output is not a terminal (e.g. pipes)
+* Normalized outputs and colors
 
 0.1.2
 =====
