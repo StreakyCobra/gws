@@ -710,9 +710,9 @@ function cmd_check()
 
         # Check if it is listed as project and print according message
         if exist_project $dir; then
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "known"
+            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Known"
         else
-            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "missing"
+            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Unknown"
         fi
     done
 
