@@ -340,6 +340,26 @@ function git_fetch()
     return 0
 }
 
+# Fetch from the origin and update ref at same time
+function git_fetch_update()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "fetch" "origin" "$2:$2")
+
+    # Execute the command
+    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
+        return 1
+    fi
+
+    if [ -z "$output" ] ; then
+        return 1
+    fi
+
+    return 0
+}
+
 # Fast-forward from the origin
 function git_fast_forward()
 {
@@ -625,12 +645,12 @@ function cmd_status()
         # Fetch origin
         [[ $1 -eq $S_FETCH ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
 
-        # Fast forward from origin
-        [[ $1 -eq $S_FAST_FORWARD ]] && git_fast_forward "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fast-forwarded from origin"
-
         # Check for difference with origin
         for branch in "${branches[@]}"
         do
+            # Text to display after branch
+            after="\n"
+
             # Cut branch name
             if [ ${#branch} -gt $(($MBL - 3)) ]; then
                 display_branch="${branch:0:$(($MBL - 3))}…"
@@ -641,6 +661,17 @@ function cmd_status()
             # If the branch is already done, skip it
             [[ $branch_done -eq 1 ]] && [ "$branch" = "$current" ] && continue
 
+            # Fast forward from origin
+            if [[ $1 -eq $S_FAST_FORWARD ]]; then
+                # Pull fast forward for current branch
+                if [ "$branch" = "$current" ]; then
+                    git_fast_forward "$dir" && after=" ${C_CYAN}(fast-forwarded)${C_OFF}${after}"
+                # Fetch update for others
+                else
+                    git_fetch_update "$dir" "$branch" && after=" ${C_CYAN}(fast-forwarded)${C_OFF}${after}"
+                fi
+            fi
+
             # Check for not consistant branches
             git_check_branch_origin $dir $branch;
 
@@ -650,18 +681,22 @@ function cmd_status()
             # If the hashes are different
             if [[ "$rc" -eq 1 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -e "${C_RED}Not in sync with origin/$branch${C_YELLOW}"
+                echo -en "${C_RED}Not in sync with origin/$branch${C_YELLOW}"
 
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -e "${C_YELLOW}No remote branch origin/$branch${C_OFF}"
+                echo -en "${C_YELLOW}No remote branch origin/$branch${C_OFF}"
 
             # Otherwise
             else
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -e "${C_GREEN}Clean${C_OFF}"
+                echo -en "${C_GREEN}Clean${C_OFF}"
+
             fi
+
+            # Print after informations
+            echo -en "${after}"
         done
     done
 
