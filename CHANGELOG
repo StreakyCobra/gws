@@ -1,6 +1,7 @@
 0.1.4
 =====
 
+* Update `ff` command to also fast-forward non-active branches
 * Bugs correction
 
 0.1.3
