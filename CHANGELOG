@@ -3,6 +3,7 @@
 
 * Update `ff` command to also fast-forward non-active branches
 * Bugs correction
+  * init was not working
 
 0.1.3
 =====

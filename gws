@@ -773,15 +773,19 @@ function usage()
 
 # }}}
 
-# First move to the first parent directory containing a projects file
-while ! is_project_root
-do
-    cd ..
-done
+# Except for the special case of "init" in which there is no project files
+if [[ "$1" != "init" ]]; then
+    # First move to the first parent directory containing a projects file
+    while ! is_project_root
+    do
+        cd ..
+    done
 
-# Then read the list of projects and ignore list
-read_projects
-read_ignored
+    # Then read the list of projects and ignore list
+    read_projects
+    read_ignored
+fi
+
 
 # Remove ignored projects
 projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
