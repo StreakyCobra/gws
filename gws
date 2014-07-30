@@ -591,7 +591,9 @@ function cmd_update()
 # Status command
 function cmd_status()
 {
-    local dir repo upstream branch branch_done rc
+    local dir repo upstream branch branch_done rc uptodate
+
+    uptodate=1
 
     # For all projects
     for dir in "${projects_indexes[@]}"
@@ -624,16 +626,19 @@ function cmd_status()
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
             echo -e "${C_RED}Dirty (Uncached changes)${C_OFF}"
             branch_done=1
+            uptodate=0
         # Check for not commited changes
         elif ! git_check_cached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
             echo -e "${C_RED}Dirty (Uncommitted changes)${C_OFF}"
             branch_done=1
+            uptodate=0
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
             echo -e "${C_RED}Dirty (Untracked files)${C_OFF}"
             branch_done=1
+            uptodate=0
         fi
 
         # List branches of current repository
@@ -682,11 +687,13 @@ function cmd_status()
             if [[ "$rc" -eq 1 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_RED}Not in sync with origin/$branch${C_YELLOW}"
+                uptodate=0
 
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_YELLOW}No remote branch origin/$branch${C_OFF}"
+                uptodate=0
 
             # Otherwise
             else
@@ -699,6 +706,10 @@ function cmd_status()
             echo -en "${after}"
         done
     done
+
+    if [[ $uptodate -eq 0 ]]; then
+        exit 1
+    fi
 
     return 0
 }
