@@ -4,9 +4,9 @@
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
 
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
     <title>gws by StreakyCobra</title>
   </head>
@@ -29,7 +29,7 @@
     <div class="container">
       <section id="main_content">
         <h1>
-<a name="gws" class="anchor" href="#gws"><span class="octicon octicon-link"></span></a>gws</h1>
+<a id="gws" class="anchor" href="#gws" aria-hidden="true"><span class="octicon octicon-link"></span></a>gws</h1>
 
 <p><code>gws</code> is a KISS, bash, colorful, vundle-inspired helper to manage workspaces
 composed of git repositories.</p>
@@ -41,7 +41,7 @@ composed of git repositories.</p>
 <p><img src="http://streakycobra.github.io/gws/images/gws_check.png" alt="gws check view"></p>
 
 <h2>
-<a name="quickstart" class="anchor" href="#quickstart"><span class="octicon octicon-link"></span></a>QuickStart</h2>
+<a id="quickstart" class="anchor" href="#quickstart" aria-hidden="true"><span class="octicon octicon-link"></span></a>QuickStart</h2>
 
 <ul>
 <li>Create a file named <code>.projects.gws</code> in the desired folder.</li>
@@ -49,8 +49,10 @@ composed of git repositories.</p>
 <li>Get all repositories with <code>gws update</code>.</li>
 <li>Hack a little bit.</li>
 <li>Show the status of the workspace with <code>gws</code> (<code>gws status</code> also works).</li>
-</ul><h2>
-<a name="how-it-works" class="anchor" href="#how-it-works"><span class="octicon octicon-link"></span></a>How it works</h2>
+</ul>
+
+<h2>
+<a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span class="octicon octicon-link"></span></a>How it works</h2>
 
 <p>This tool offers some functionalities, among which:</p>
 
@@ -101,11 +103,13 @@ home folder, because it need to search entire space for unknown repository.</p>
 <pre><code>gws check
 </code></pre>
 </li>
-</ul><h2>
-<a name="syntaxes" class="anchor" href="#syntaxes"><span class="octicon octicon-link"></span></a>Syntaxes</h2>
+</ul>
+
+<h2>
+<a id="syntaxes" class="anchor" href="#syntaxes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Syntaxes</h2>
 
 <h3>
-<a name="projectsgws" class="anchor" href="#projectsgws"><span class="octicon octicon-link"></span></a>.projects.gws</h3>
+<a id="projectsgws" class="anchor" href="#projectsgws" aria-hidden="true"><span class="octicon octicon-link"></span></a>.projects.gws</h3>
 
 <p>One project per line. Must be of the form:</p>
 
@@ -125,8 +129,10 @@ home folder, because it need to search entire space for unknown repository.</p>
 a folder hierarchy.</p></li>
 <li><p>The urls are passed to git as-is, so can be anything accepted by git, but
 must not contain <code>|</code>.</p></li>
-</ul><h3>
-<a name="ignoregws" class="anchor" href="#ignoregws"><span class="octicon octicon-link"></span></a>.ignore.gws</h3>
+</ul>
+
+<h3>
+<a id="ignoregws" class="anchor" href="#ignoregws" aria-hidden="true"><span class="octicon octicon-link"></span></a>.ignore.gws</h3>
 
 <p>One regular expression per line. The regular expression will be matched to
 projects name. Some examples:</p>
@@ -150,8 +156,10 @@ projects name. Some examples:</p>
 <pre><code>a
 </code></pre>
 </li>
-</ul><h2>
-<a name="some-misc-informations" class="anchor" href="#some-misc-informations"><span class="octicon octicon-link"></span></a>Some misc informations</h2>
+</ul>
+
+<h2>
+<a id="some-misc-informations" class="anchor" href="#some-misc-informations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some misc informations</h2>
 
 <ul>
 <li><p>Except for cloning repositories, this script has not for goal to interact
@@ -168,8 +176,10 @@ localy disable some projects (for instance work-related projects at home
 because they are unneeded or even not accessible).</p></li>
 <li><p><code>gws check</code> can be quite slow (for instance if the workspace is the home
 folder) because it searches all existing git projects recursively.</p></li>
-</ul><h2>
-<a name="future" class="anchor" href="#future"><span class="octicon octicon-link"></span></a>Future</h2>
+</ul>
+
+<h2>
+<a id="future" class="anchor" href="#future" aria-hidden="true"><span class="octicon octicon-link"></span></a>Future</h2>
 
 <p>This project aims to stay simple. I will try to keep the project as alive as
 possible for a bash script, by correcting bugs and maybe some improvements.
@@ -177,7 +187,7 @@ Also, maybe one day, if I have time, I will rewrite all this script in python or
 other more maintainable language.</p>
 
 <h2>
-<a name="context" class="anchor" href="#context"><span class="octicon octicon-link"></span></a>Context</h2>
+<a id="context" class="anchor" href="#context" aria-hidden="true"><span class="octicon octicon-link"></span></a>Context</h2>
 
 <p>If you are, like me, a Linux programmer/hacker/coder who use heavily git, you
 certainly have a directory in your home folder named <code>dev</code>, <code>workspace</code>, <code>code</code>
