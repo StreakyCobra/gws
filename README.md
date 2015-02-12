@@ -25,10 +25,15 @@ Installation
   * **Arch Linux**: Install the [gws](https://aur.archlinux.org/packages/gws/)
     package from AUR
   * **Other Linux**: You simply need to have the `src/gws` bash script somewhere
-    inside your `$PATH`. Maybe take a look at
-    [peru](https://github.com/buildinspace/peru) which permits to put files
-    somewhere in your system (`~/bin` for instance) and keep them synchronized.
-
+  inside your `$PATH`:
+    * If someone made a package for you distribution you are lucky.
+    * You can put it directly in `/bin` as root user, but it is complicated to
+      keep it up-to-date.
+    * Otherwise, it is also possible to put it in your home folder, for example
+      in `~/.local/bin`. But you have to be sure that this folder is in your
+      `$PATH`. (I should also suggest you to have a look at
+      [peru](https://github.com/buildinspace/peru) which permits to keep files
+      from different sources up to date with one command).
 
 QuickStart
 ----------
