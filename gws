@@ -2,7 +2,7 @@
 
 ################################################################################
 # Author:       Fabien Dubosson <fabien.dubosson@gmail.com>                    #
-# OS:           Probably all linux distributions                               #
+# OS:           Probably all linux distributions                               #
 # Requirements: git, bash > 4.0                                                #
 # License:      MIT (See below)                                                #
 # Version:      0.1.5-DEV                                                      #
@@ -39,7 +39,7 @@
 
 # {{{ Bash options
 
-# Debug
+# Uncomment for Debug
 #set -x
 
 # Propagate fail in pipes
@@ -60,8 +60,8 @@ PROJECTS_FILE=".projects.gws"
 
 # Name of the file containing the ignored patterns
 IGNORE_FILE=".ignore.gws"
-
-# Field separator in the projects list
+ 
+# Field separator in the projects list
 FIELD_SEP='|'
 
 # Git name of the origin branch of repositories
@@ -138,7 +138,7 @@ function array_contains()
     return $in
 }
 
-# Removed elements from a list that match a pattern in the second list
+# Remove elements from a list that match a pattern in the second list
 function remove_matching()
 {
     local set_a set_b a b ok
@@ -208,7 +208,7 @@ function is_project_root()
     # If we reach root, and there is no projects file, exit with an error message
     [[ $(pwd) = "/" ]] && echo "Not in a workspace" && exit 1
 
-    # Otherwise return failure
+    # Otherwise return failure. Must never be reached... normally
     return 1
 }
 
@@ -224,12 +224,12 @@ function add_project()
 }
 
 # Check if the project exists in the list of projects
-function exist_project()
+function exists_project()
 {
     array_contains "$1" "${projects_indexes[@]}"
 }
 
-# Read the list of projects from the file
+# Read the list of projects from the projects list file
 function read_projects()
 {
     local dir repo upstream
@@ -242,12 +242,12 @@ function read_projects()
         repo=$(echo $line | cut -d${FIELD_SEP} -f2)
         upstream=$(echo $line | cut -d${FIELD_SEP} -f3)
 
-        # Skip if the dir is empty
+        # Skip if the dir is empty
         if [ -z "$dir" ]; then
             continue
         fi
 
-        # Skip if the repo is empty
+        # Skip if the repo is empty
         if [ -z "$repo" ]; then
             continue
         fi
@@ -272,7 +272,7 @@ function read_ignored()
     # Read line by line
     while read -r pattern || [[ -n "$pattern" ]]
     do
-        # Skip if the line is empty
+        # Skip if the line is empty
         if [ -z "$pattern" ]; then
             continue
         fi
@@ -480,7 +480,7 @@ function git_check_untracked()
     # Git command to execute
     cmd=( "git" "status" "--porcelain" )
 
-    # Run the command, and if it succeed, return success
+    # Run the command
     nb=$(cd "$1" && "${cmd[@]}" 2>/dev/null | grep "^??" | wc -l )
 
     # If no untracked files return success
@@ -756,7 +756,7 @@ function cmd_check()
         fi
 
         # Check if it is listed as project and print according message
-        if exist_project $dir; then
+        if exists_project $dir; then
             printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Known"
         else
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Unknown"
