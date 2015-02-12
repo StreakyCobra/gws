@@ -2,6 +2,10 @@
 =====
 
 * Add exit code to status function
+* Add `tests` folder to easily set up testing environment
+* Start using `git flow` versionning
+* Update README.md
+* Cosmetic changes inside the script
 
 0.1.4
 =====
