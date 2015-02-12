@@ -5,7 +5,7 @@
 # OS:           Probably all linux distributions                               #
 # Requirements: git, bash > 4.0                                                #
 # License:      MIT (See below)                                                #
-# Version:      0.1.5-DEV                                                      #
+# Version:      0.1.5
 #                                                                              #
 # 'gws' is the abbreviation of 'Git WorkSpace'.                                #
 # This is an helper to manage workspaces which contain git repositories.       #
@@ -15,7 +15,7 @@
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2014 Fabien Dubosson
+# Copyright (c) 2015 Fabien Dubosson
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ set -o pipefail
 # {{{ Parameters
 
 # Version number
-VERSION="0.1.5-DEV"
+VERSION="0.1.5"
 
 # Starting directory
 START_PWD="$(pwd)"
