@@ -31,28 +31,145 @@
         <h1>
 <a id="gws" class="anchor" href="#gws" aria-hidden="true"><span class="octicon octicon-link"></span></a>gws</h1>
 
-<p><code>gws</code> is a KISS, bash, colorful, vundle-inspired helper to manage workspaces
-composed of git repositories.</p>
+<p><code>gws</code> is a KISS, bash, colorful helper to manage workspaces composed of git
+repositories.</p>
 
-<p><img src="http://streakycobra.github.io/gws/images/gws_update.png" alt="gws update view"></p>
+<h2>
+<a id="show-me-images" class="anchor" href="#show-me-images" aria-hidden="true"><span class="octicon octicon-link"></span></a>SHOW ME IMAGES!</h2>
 
-<p><img src="http://streakycobra.github.io/gws/images/gws_status.png" alt="gws status view"></p>
+<p>Here are some screen captures of <code>gws</code>:</p>
 
-<p><img src="http://streakycobra.github.io/gws/images/gws_check.png" alt="gws check view"></p>
+<p><img src="http://streakycobra.github.io/gws/images/001.png" alt="gws"></p>
+
+<p><img src="http://streakycobra.github.io/gws/images/002.png" alt="gws"></p>
+
+<p><img src="http://streakycobra.github.io/gws/images/003.png" alt="gws"></p>
+
+<p><img src="http://streakycobra.github.io/gws/images/004.png" alt="gws"></p>
+
+<p><img src="http://streakycobra.github.io/gws/images/005.png" alt="gws"></p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<ul>
+<li>
+<strong>Arch Linux</strong>: Install the <a href="https://aur.archlinux.org/packages/gws/">gws</a>
+package from AUR</li>
+<li>
+<strong>Other Linux</strong>: You simply need to have the <code>src/gws</code> bash script somewhere
+inside your <code>$PATH</code>. Maybe take a look at
+<a href="https://github.com/buildinspace/peru">peru</a> which permits to put files
+somewhere in your system (<code>~/bin</code> for instance) and keep them synchronized.</li>
+</ul>
 
 <h2>
 <a id="quickstart" class="anchor" href="#quickstart" aria-hidden="true"><span class="octicon octicon-link"></span></a>QuickStart</h2>
 
 <ul>
-<li>Create a file named <code>.projects.gws</code> in the desired folder.</li>
-<li>Fill it with the projects informations (see below).</li>
-<li>Get all repositories with <code>gws update</code>.</li>
-<li>Hack a little bit.</li>
-<li>Show the status of the workspace with <code>gws</code> (<code>gws status</code> also works).</li>
+<li>
+<p>Create a file named <code>.projects.gws</code> in a desired workspace folder (e.g.
+<code>~/dev</code>) and fill it with the projects informations (see
+<a href="#projectsgws">Syntaxes below</a>):</p>
+
+<pre><code>  work/tools/q | https://github.com/harelba/q.git
+  contrib/gws  | https://github.com/StreakyCobra/gws.git
+  contrib/peru | https://github.com/buildinspace/peru
+</code></pre>
+</li>
 </ul>
 
+<p>or</p>
+
+<ul>
+<li>
+<p>Let it detect existing repositories and create the <code>.projects.gws</code> for you
+with:</p>
+
+<pre><code>$ cd path/to/your/workspace
+$ gws init
+</code></pre>
+</li>
+</ul>
+
+<p>and then</p>
+
+<ul>
+<li>Clone all missing repositories with <code>gws update</code>.</li>
+<li>Do some hacking.</li>
+<li>Show the status of the workspace with <code>gws</code>. It permits to know which
+repositories are clean, which one have uncommited changes, or even to know
+which one are not up-to-date with master.</li>
+</ul>
+
+<h3>
+<a id="but-better" class="anchor" href="#but-better" aria-hidden="true"><span class="octicon octicon-link"></span></a>But better</h3>
+
+<p>Let say you made a <code>~/dev/</code> workspace folder and you created your <code>.project.gws</code>
+list in it. Then you workspace became really easy to replicate! Just make this
+<code>~/dev</code> folder a git repository, add two files and commit them:
+<code>.projects.gws</code> and the following <code>.gitignore</code>:</p>
+
+<pre><code># Ignore everything, so all repositories in our case
+*
+
+# But no these files
+!.projects.gws
+!.gitignore
+</code></pre>
+
+<p>Now, when you need to get your workspace on another computer, just clone
+the <code>dev</code> repository, for instance again to the <code>~/dev</code> folder. Go into it and
+do a <code>gws update</code>. Everything is cloned and ready to be hacked!</p>
+
+<p>You want to add a new project into your workspace? Add it to the <code>.projects.gws</code>
+list, do a <code>gws update</code> to get it. Then commit and push the <code>.projects.gws</code>
+file, so when you arrive at work for instance, you just need to do <code>git pull</code> on
+the <code>~/dev</code> folder and then <code>gws update</code> to find the same workspace structure
+that you where having at home.</p>
+
 <h2>
-<a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span class="octicon octicon-link"></span></a>How it works</h2>
+<a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?</h2>
+
+<p>If you are, like me, a Linux programmer/hacker/coder who use heavily git, you
+certainly have a directory in your home folder named <code>dev</code>, <code>workspace</code>, <code>code</code>
+or something else that contains all the projects you are working on. For
+instance my currently is:</p>
+
+<pre><code>dev
+├── archlinux
+│   ├── aur
+│   └── habs
+├── perso
+│   ├── gws
+│   ├── imaxplore
+│   └── teafree
+├── config
+</code></pre>
+
+<p>where <code>aur</code>, <code>habs</code>, <code>gws</code>, <code>imaxplore</code>, <code>teafree</code>, <code>config</code> are git
+repositories.</p>
+
+<p>Since I use at least three different computers, one laptop, one at home and one
+at work, I like to have the same folder structure on all of them. Of course
+remembering which project was added recently on others computer and in which
+folder is tedious.</p>
+
+<p>So I started to thing about using git submodules to register all projects on
+which I am working and syncing them with git between the two computers. But
+clearly git submodules are not usable because they are working on specific
+commit and are not following branches.</p>
+
+<p>No worry. The problem is pretty trivial, so I decided to start write a little
+bash (YOLO) script that read a simple list of repositories, and clone them if
+they don't exist. And then, commit by commit, the script as grown to finally
+become a helper to sync, monitor and check workspaces.</p>
+
+<p>I thought it can be useful to other people, so I made a little cleanup, write a
+small documentation, and there it is. I hope you will enjoy it!</p>
+
+<h2>
+<a id="what-it-does" class="anchor" href="#what-it-does" aria-hidden="true"><span class="octicon octicon-link"></span></a>What it does</h2>
 
 <p>This tool offers some functionalities, among which:</p>
 
@@ -75,32 +192,56 @@ your home computer the work-related projects.</p>
 </code></pre>
 </li>
 <li>
+<p>It can detect already existing repositories and create the projects list
+from that.</p>
+
+<pre><code>$ gws init
+</code></pre>
+</li>
+<li>
 <p>It can clone non-existing repositories from the projects list (but not
 supress them in case of removal, you have to do it yourself for safety
 reason. Notice that there is the <code>check</code> functionnality to identify
-unlisted repositories).</p>
+those unlisted repositories).</p>
 
-<pre><code>gws update
+<pre><code>$ gws update
 </code></pre>
 </li>
 <li>
 <p>It can monitor all listed repositories in one command (uncommitted changes,
 untracked changes, branches not synced with origin, ...).</p>
 
-<pre><code>gws status
+<pre><code>$ gws status
 </code></pre>
 
 <p>or simply</p>
 
-<pre><code>gws
+<pre><code>$ gws
+</code></pre>
+</li>
+<li>
+<p>It can fetch the modifications from <code>origin</code> for all repositories, it is
+usefull te be sure to have the latest modifications, for instance before
+going to take the train with no internet connection:</p>
+
+<pre><code>$ gws fetch
+</code></pre>
+</li>
+<li>
+<p>It can also (for the same reasons) pull the modifications from origin for
+all repositories (but fast-forward only). Syntactic sugar to avoid a <code>gws
+fetch</code> and then many merges:</p>
+
+<pre><code>$ gws ff    # Mnemonic: ff=fast-forward
 </code></pre>
 </li>
 <li>
 <p>It can check the workspace for all repositories (known, unknown, ignored,
 missing). Note: This command can be quite slow in large repositories (e.g.
-home folder, because it need to search entire space for unknown repository.</p>
+home folder, because it need to search entire space for unknown repository.
+Mainly used from time to time to check consistence of the workspace:</p>
 
-<pre><code>gws check
+<pre><code>$ gws check
 </code></pre>
 </li>
 </ul>
@@ -113,22 +254,22 @@ home folder, because it need to search entire space for unknown repository.</p>
 
 <p>One project per line. Must be of the form:</p>
 
-<pre><code>name | url
+<pre><code>any/folder/name | url
 </code></pre>
 
 <p>or</p>
 
-<pre><code>name | url | upstream
+<pre><code>any/folder/name | url | upstream_url
 </code></pre>
 
 <p>knowing that:</p>
 
 <ul>
 <li><p>There can be blank lines, but no comments or anything else.</p></li>
-<li><p>The name can be anything not containing <code>|</code>. Use <code>/</code> to group projects in
-a folder hierarchy.</p></li>
-<li><p>The urls are passed to git as-is, so can be anything accepted by git, but
+<li><p>The <em>name</em> can be any valid linux folder name not containing <code>|</code>.</p></li>
+<li><p>The <em>urls</em> are passed to git as-is, so can be anything accepted by git, but
 must not contain <code>|</code>.</p></li>
+<li><p>The <em>upstream_url</em> will be mapped to the <code>upstream</code> remote in git</p></li>
 </ul>
 
 <h3>
@@ -158,6 +299,8 @@ projects name. Some examples:</p>
 </li>
 </ul>
 
+<p>This function is really</p>
+
 <h2>
 <a id="some-misc-informations" class="anchor" href="#some-misc-informations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some misc informations</h2>
 
@@ -166,14 +309,15 @@ projects name. Some examples:</p>
 with your repositories. So no <code>pull all</code>, <code>push all</code>, <code>delete all unused</code>,
 functionnality will be implemented. This will imply too much checking to
 ensure no loose of informations. Instead, just look the satus of
-the repositories and do needed actions manually on regulare basis.</p></li>
-<li><p>You can use the commands from any subfolder of the workspace (as git does
+the repositories and do needed actions manually on regular basis.</p></li>
+<li><p>You can use the commands from any subfolder of the workspace (as <code>git</code> does
 for instance).</p></li>
 <li><p>The file <code>.projects.gws</code> can easily be verisonned to sync the list of
 projects on which you are working between different computers.</p></li>
-<li><p>The file <code>.ignore.gws</code> permit to keep the same list on all computer, but to
-localy disable some projects (for instance work-related projects at home
-because they are unneeded or even not accessible).</p></li>
+<li><p>The file <code>.ignore.gws</code> permit to keep the same <code>.projects.gws</code> list on all
+computer, but to localy disable some projects (for instance work-related
+projects at home because they are unneeded or even not accessible from
+there).</p></li>
 <li><p><code>gws check</code> can be quite slow (for instance if the workspace is the home
 folder) because it searches all existing git projects recursively.</p></li>
 </ul>
@@ -185,45 +329,6 @@ folder) because it searches all existing git projects recursively.</p></li>
 possible for a bash script, by correcting bugs and maybe some improvements.
 Also, maybe one day, if I have time, I will rewrite all this script in python or
 other more maintainable language.</p>
-
-<h2>
-<a id="context" class="anchor" href="#context" aria-hidden="true"><span class="octicon octicon-link"></span></a>Context</h2>
-
-<p>If you are, like me, a Linux programmer/hacker/coder who use heavily git, you
-certainly have a directory in your home folder named <code>dev</code>, <code>workspace</code>, <code>code</code>
-or something else that contains all the projects you are working on. For
-instance my currently is:</p>
-
-<pre><code>dev
-├── archlinux
-│   ├── aur
-│   └── habs
-├── perso
-│   ├── gws
-│   ├── imaxplore
-│   └── teafree
-├── config
-</code></pre>
-
-<p>where <code>aur</code>, <code>habs</code>, <code>gws</code>, <code>imaxplore</code>, <code>teafree</code>, <code>config</code> are git
-repositories.</p>
-
-<p>Since I use at least two different computers, one laptop and one at work, I like
-to have the same folder structure on both. Of course remembering which project
-was added recently and in which folder is tedious.</p>
-
-<p>So I started to thing about using git submodules to register all projects on
-which I am working and syncing them with git between the two computers. But
-clearly git submodules are not usable because they are working on specific
-commit and are not following branches.</p>
-
-<p>No worry. The problem is pretty trivial, so I decided to start write a little
-bash script that read a simple list of repositories, and clone them if they
-don't exist. And then, commit by commit, the script as grown to finally become
-a helper to sync, monitor and check workspaces.</p>
-
-<p>I thought it can be useful to other people, so I made a little cleanup, write
-a small documentation, and there it is. I hope you will enjoy it!</p>
       </section>
     </div>
 
