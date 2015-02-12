@@ -4,11 +4,15 @@ gws
 `gws` is a KISS, bash, colorful, vundle-inspired helper to manage workspaces
 composed of git repositories.
 
-![gws update view](http://streakycobra.github.io/gws/images/gws_update.png)
+![gws](http://streakycobra.github.io/gws/images/001.png)
 
-![gws status view](http://streakycobra.github.io/gws/images/gws_status.png)
+![gws](http://streakycobra.github.io/gws/images/002.png)
 
-![gws check view](http://streakycobra.github.io/gws/images/gws_check.png)
+![gws](http://streakycobra.github.io/gws/images/003.png)
+
+![gws](http://streakycobra.github.io/gws/images/004.png)
+
+![gws](http://streakycobra.github.io/gws/images/005.png)
 
 QuickStart
 ----------
