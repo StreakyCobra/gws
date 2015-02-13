@@ -238,9 +238,9 @@ function read_projects()
     while read line || [[ -n "$line" ]]
     do
         # Read the line fields
-        dir=$(echo "$line" | cut -d${FIELD_SEP} -f1)
-        repo=$(echo "$line" | cut -d${FIELD_SEP} -f2)
-        upstream=$(echo "$line" | cut -d${FIELD_SEP} -f3)
+        dir=$(echo "$line" | cut -d${FIELD_SEP} -f1 | tr -d '[[:space:]]')
+        repo=$(echo "$line" | cut -d${FIELD_SEP} -f2 | tr -d '[[:space:]]')
+        upstream=$(echo "$line" | cut -d${FIELD_SEP} -f3 | tr -d '[[:space:]]')
 
         # Skip if the dir is empty
         if [ -z "$dir" ]; then
