@@ -40,7 +40,7 @@
 # {{{ Bash options
 
 # Uncomment for Debug
-#set -x
+# set -x
 
 # Propagate fail in pipes
 set -o pipefail
