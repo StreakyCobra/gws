@@ -238,9 +238,9 @@ function read_projects()
     while read line || [[ -n "$line" ]]
     do
         # Read the line fields
-        dir=$(echo $line | cut -d${FIELD_SEP} -f1)
-        repo=$(echo $line | cut -d${FIELD_SEP} -f2)
-        upstream=$(echo $line | cut -d${FIELD_SEP} -f3)
+        dir=$(echo "$line" | cut -d${FIELD_SEP} -f1)
+        repo=$(echo "$line" | cut -d${FIELD_SEP} -f2)
+        upstream=$(echo "$line" | cut -d${FIELD_SEP} -f3)
 
         # Skip if the dir is empty
         if [ -z "$dir" ]; then
@@ -253,7 +253,7 @@ function read_projects()
         fi
 
         # Otherwise add the project to the list
-        add_project $dir $repo $upstream
+        add_project "$dir" "$repo" "$upstream"
     done < $PROJECTS_FILE
 
     # Extract sorted index of projects
@@ -451,7 +451,7 @@ function git_check_uncached_uncommited()
     cmd=( "git" "diff" "--exit-code" )
 
     # Run the command, and if it succeed, return success
-    (cd "$1" && "${cmd[@]}" 2>&1 1>/dev/null) && return 0
+    (cd "$1" && "${cmd[@]}" 1>/dev/null 2>&1) && return 0
 
     # Otherwise return failure
     return 1
@@ -466,7 +466,7 @@ function git_check_cached_uncommited()
     cmd=( "git" "diff" "--cached" "--exit-code" )
 
     # Run the command, and if it succeed, return success
-    (cd "$1" && "${cmd[@]}" 2>&1 1>/dev/null) && return 0
+    (cd "$1" && "${cmd[@]}" 1>/dev/null 2>&1) && return 0
 
     # Otherwise return failure
     return 1
@@ -481,7 +481,7 @@ function git_check_untracked()
     cmd=( "git" "status" "--porcelain" )
 
     # Run the command
-    nb=$(cd "$1" && "${cmd[@]}" 2>/dev/null | grep "^??" | wc -l )
+    nb=$(cd "$1" && "${cmd[@]}" 2>/dev/null | grep -c "^??")
 
     # If no untracked files return success
     [[ $nb -eq 0 ]] && return 0
@@ -508,7 +508,7 @@ function git_check_branch_origin()
     remote_hash=$(cd "$1"; "${remote_cmd[@]}" 2>/dev/null) || return 2
 
     # If the hashes are equal, return success
-    [ $local_hash == $remote_hash ] && return 0
+    [ "$local_hash" == "$remote_hash" ] && return 0
 
     # Otherwise return failure
     return 1
@@ -531,7 +531,7 @@ function cmd_init()
     declare -a found
 
     # Prepare the list of all existing projects, sorted
-    found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | sort) )
+    found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | sort) )
     found=( $(remove_prefixed found[@]) )
 
     # Create the list of repositories
@@ -557,14 +557,14 @@ function cmd_update()
     for dir in "${projects_indexes[@]}"
     do
         # Get informations about the current project
-        repo=$(get_repo_url ${projects[$dir]})
-        upstream=$(get_upstream_url ${projects[$dir]})
+        repo=$(get_repo_url "${projects[$dir]}")
+        upstream=$(get_upstream_url "${projects[$dir]}")
 
         # Print the repository
         echo -e "${C_BLUE}$dir${C_OFF}:"
 
         # Check if repository already exists, and continue if it is the case
-        if [ -d $dir ]; then
+        if [ -d "$dir" ]; then
             # Print the information
             printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Already exist"
             continue
@@ -574,13 +574,13 @@ function cmd_update()
         printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
 
         # Clone the repository
-        if ! git_clone $repo $dir; then
+        if ! git_clone "$repo" "$dir"; then
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
             return 1
         fi
 
         # If an upstream url is set, add it
-        [[ ! -z "$upstream" ]] && git_add_upstream $dir $upstream
+        [[ ! -z "$upstream" ]] && git_add_upstream "$dir" "$upstream"
 
         printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
     done
@@ -599,7 +599,7 @@ function cmd_status()
     for dir in "${projects_indexes[@]}"
     do
         # Get informations about the current project
-        repo=$(get_repo_url ${projects[$dir]})
+        repo=$(get_repo_url "${projects[$dir]}")
 
         # Print the project name
         echo -e "${C_BLUE}$dir${C_OFF}:"
@@ -615,8 +615,8 @@ function cmd_status()
         current=$(git_branch "$dir")
 
         # Cut branch name
-        if [ ${#current} -gt $(($MBL - 3)) ]; then
-            display_current="${current:0:$(($MBL - 3))}…"
+        if [ ${#current} -gt $((MBL - 3)) ]; then
+            display_current="${current:0:$((MBL - 3))}…"
         else
             display_current="$current"
         fi
@@ -658,8 +658,8 @@ function cmd_status()
             after="\n"
 
             # Cut branch name
-            if [ ${#branch} -gt $(($MBL - 3)) ]; then
-                display_branch="${branch:0:$(($MBL - 3))}…"
+            if [ ${#branch} -gt $((MBL - 3)) ]; then
+                display_branch="${branch:0:$((MBL - 3))}…"
             else
                 display_branch="$branch"
             fi
@@ -679,7 +679,7 @@ function cmd_status()
             fi
 
             # Check for not consistant branches
-            git_check_branch_origin $dir $branch;
+            git_check_branch_origin "$dir" "$branch";
 
             # Get the return of the function
             rc=$?
@@ -732,7 +732,7 @@ function cmd_check()
     readarray -t projects_ignored < <(comm -23 <(for a in "${projects_all_indexes[@]}"; do echo "$a"; done | sort) <(for a in "${projects_indexes[@]}"; do echo "$a"; done | sort))
 
     # Prepare list of all projects, existing or missing, sorted with no
-    found=( $(find * -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | sort) )
+    found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | sort) )
     found=( $(remove_prefixed found[@]) )
     all=( "${found[@]}" "${projects_all_indexes[@]}" )
     readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort | uniq)
@@ -744,7 +744,7 @@ function cmd_check()
         echo -e "${C_BLUE}$dir${C_OFF}:"
 
         # Check if the directory is ignored
-        if array_contains $dir ${projects_ignored[@]}; then
+        if array_contains "$dir" "${projects_ignored[@]}"; then
             printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Ignored"
             continue
         fi
