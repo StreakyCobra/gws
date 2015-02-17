@@ -237,6 +237,12 @@ function read_projects()
     # Read line by line
     while read line || [[ -n "$line" ]]
     do
+        # Remove comments (inline and full line)
+        line=$(echo $line | sed -e 's/#.*$//')
+
+        # Check if this is an empty line: continue
+        [[ -z $line ]] && continue
+
         # Read the line fields
         dir=$(echo "$line" | cut -d${FIELD_SEP} -f1 | tr -d '[[:space:]]')
         repo=$(echo "$line" | cut -d${FIELD_SEP} -f2 | tr -d '[[:space:]]')
@@ -272,14 +278,14 @@ function read_ignored()
     # Read line by line
     while read -r pattern || [[ -n "$pattern" ]]
     do
-        # Skip if the line is empty
-        if [ -z "$pattern" ]; then
-            continue
-        fi
+        # Remove comments (inline and full line)
+        pattern=$(echo $pattern | sed -e 's/#.*$//')
+
+        # Check if this is an empty pattern: continue
+        [[ -z $pattern ]] && continue
 
         pattern=$(echo "$pattern" | sed -e 's/[/&]/\\&/g')
         ignored_patterns+=( "$pattern" )
-
     done < $IGNORE_FILE
 
     return 0
