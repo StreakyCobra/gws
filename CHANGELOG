@@ -3,6 +3,7 @@
 
 * Allow comments in configuration files (projects and ignore)
 * Startup speed improvement (roughly 13%)
+* Bugs correction
 
 0.1.5
 =====

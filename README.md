@@ -271,4 +271,5 @@ Contributors
 Many thanks to these people for code contributions:
 
 - Frédéric Mahé
+- Blount
 
