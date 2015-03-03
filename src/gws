@@ -216,7 +216,7 @@ function is_project_root()
 function add_project()
 {
     # Add the project to the list
-    projects[$1]="$2|$3"
+    projects[$1]="$2${FIELD_SEP}$3"
 
     return 0
 }
@@ -532,7 +532,7 @@ function cmd_init()
     done)
 
     # Write the file if it is not empty
-    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_GREEN}Workspace file «.projects.gws» created.${C_OFF}" && return 0
+    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_GREEN}Workspace file «${PROJECTS_FILE}» created.${C_OFF}" && return 0
 
     # Display informations messages
     echo -e "${C_YELLOW}No repository found.${C_OFF}"
