@@ -532,7 +532,7 @@ function cmd_init()
     done)
 
     # Write the file if it is not empty
-    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_GREEN}Workspace file «.projects.gws» created.${C_OFF}" && return 0
+    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_GREEN}Workspace file «${PROJECTS_FILE}» created.${C_OFF}" && return 0
 
     # Display informations messages
     echo -e "${C_YELLOW}No repository found.${C_OFF}"
