@@ -264,3 +264,11 @@ This project aims to stay simple. I will try to keep the project as alive as
 possible for a bash script, by correcting bugs and maybe some improvements.
 Also, maybe one day, if I have time, I will rewrite all this script in python or
 other more maintainable language.
+
+Contributors
+------------
+
+Many thanks to these people for code contributions:
+
+- Frédéric Mahé
+

@@ -2,6 +2,7 @@
 =====
 
 * Allow comments in configuration files (projects and ignore)
+* Startup speed improvement (roughly 13%)
 
 0.1.5
 =====
