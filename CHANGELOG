@@ -2,8 +2,11 @@
 =====
 
 * Allow comments in configuration files (projects and ignore files)
-* Startup speed improvement (roughly 13%)
-* Different bugs correction
+* Code cleaning (Use herestring, avoid pipes)
+* Different bugs correction:
+  - #2
+  - #3
+  - #6
 
 0.1.5
 =====
