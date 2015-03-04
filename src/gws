@@ -500,7 +500,7 @@ function git_check_branch_origin()
 
     # Execute the command to get the local hash, If it fails this is weird,
     # so... exiting
-    local_hash=$(cd "$1"; "${local_cmd[@]}" 2>/dev/null) || return 0
+    local_hash=$(cd "$1"; "${local_cmd[@]}" 2>/dev/null) || return 3
 
     # Execute the command to get the remote hash. If it fails, that mean there
     # is no remote branch, return special code
@@ -693,6 +693,12 @@ function cmd_status()
             elif [[ "$rc" -eq 2 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_YELLOW}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
+                uptodate=0
+
+            # If there is no local hash (must never happen... but who knows?)
+            elif [[ "$rc" -eq 3 ]]; then
+                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
+                echo -en "${C_RED}Internal error${C_OFF}"
                 uptodate=0
 
             # Otherwise
