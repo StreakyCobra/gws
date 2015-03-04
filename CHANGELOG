@@ -1,8 +1,9 @@
 0.1.6
 =====
 
-* Allow comments in configuration files (projects and ignore)
+* Allow comments in configuration files (projects and ignore files)
 * Startup speed improvement (roughly 13%)
+* Bugs correction
 
 0.1.5
 =====
@@ -17,8 +18,8 @@
 =====
 
 * Update `ff` command to also fast-forward non-active branches
-* Bugs correction
-  * init was not working
+* Bugs correction:
+  - init was not working
 
 0.1.3
 =====
