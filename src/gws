@@ -238,6 +238,9 @@ function read_projects()
     # Read line by line (discard comments and empty lines)
     while read line
     do
+        # Remove inline comments
+        line=$(sed -e 's/#.*$//' <<< "$line")
+        
         # Read the line fields
         dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | tr -d '[[:space:]]')
         repo=$(cut -d${FIELD_SEP} -f2 <<< "$line" | tr -d '[[:space:]]')
