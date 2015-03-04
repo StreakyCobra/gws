@@ -60,7 +60,7 @@ PROJECTS_FILE=".projects.gws"
 
 # Name of the file containing the ignored patterns
 IGNORE_FILE=".ignore.gws"
- 
+
 # Field separator in the projects list
 FIELD_SEP='|'
 
@@ -337,7 +337,7 @@ function git_fetch_update()
     local cmd
 
     # Git command to execute
-    cmd=( "git" "fetch" "origin" "$2:$2")
+    cmd=( "git" "fetch" "${GIT_ORIGIN}" "$2:$2")
 
     # Execute the command
     if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
@@ -522,13 +522,13 @@ function cmd_init()
     declare -a found
 
     # Prepare the list of all existing projects, sorted
-    found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | cut -c 3- | sort) )
+    found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e "s#/${GIT_FOLDER}\$##" | cut -c 3- | sort) )
     found=( $(remove_prefixed found[@]) )
 
     # Create the list of repositories
     output=$(for dir in "${found[@]}"
     do
-        echo "$dir | $(git_remote $dir 'origin') | $(git_remote $dir 'upstream')"
+        echo "$dir | $(git_remote $dir "${GIT_ORIGIN}") | $(git_remote $dir 'upstream')"
     done)
 
     # Write the file if it is not empty
@@ -678,13 +678,13 @@ function cmd_status()
             # If the hashes are different
             if [[ "$rc" -eq 1 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_RED}Not in sync with origin/$branch${C_OFF}"
+                echo -en "${C_RED}Not in sync with ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
 
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_YELLOW}No remote branch origin/$branch${C_OFF}"
+                echo -en "${C_YELLOW}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
 
             # Otherwise
@@ -723,7 +723,7 @@ function cmd_check()
     readarray -t projects_ignored < <(comm -23 <(for a in "${projects_all_indexes[@]}"; do echo "$a"; done | sort) <(for a in "${projects_indexes[@]}"; do echo "$a"; done | sort))
 
     # Prepare list of all projects, existing or missing, sorted with no
-    found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e 's#/.git$##' | cut -c 3- | sort) )
+    found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e "s#/${GIT_FOLDER}\$##" | cut -c 3- | sort) )
     found=( $(remove_prefixed found[@]) )
     all=( "${found[@]}" "${projects_all_indexes[@]}" )
     readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort -u)
