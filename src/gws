@@ -267,17 +267,19 @@ function read_ignored()
     local pattern
 
     # Read line by line
-    while read -r pattern || [[ -n "$pattern" ]]
+    while read -r pattern
     do
-        # Remove comments (inline and full line)
+        # Remove inline comments
         pattern=$(sed -e 's/#.*$//' <<< "$pattern")
 
         # Check if this is an empty pattern: continue
         [[ -z $pattern ]] && continue
 
         pattern=$(sed -e 's/[/&]/\\&/g' <<< "$pattern")
+
+        # Add it to the list of ignored patterns
         ignored_patterns+=( "$pattern" )
-    done < $IGNORE_FILE
+    done < <(grep -v "^#\|^$" $IGNORE_FILE)
 
     return 0
 }
