@@ -601,7 +601,7 @@ function cmd_update()
 # Status command
 function cmd_status()
 {
-    local dir repo upstream branch branch_done rc uptodate
+    local dir repo upstream branch branch_done rc uptodate printed
 
     uptodate=1
 
@@ -617,7 +617,7 @@ function cmd_status()
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
-            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}\n"
+            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}\n" || printf "\n"
             uptodate=0
             continue
         fi
@@ -636,37 +636,47 @@ function cmd_status()
         # If there is no "origin" URL defined, don't print branch information (useless)
         [[ -z $repo ]] && display_current=" "
 
+        # Nothing is printed yet
+        printed=0
+
         # Check for not commited not cached changes
         if ! git_check_uncached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Uncached changes)${C_OFF} "
             branch_done=1
             uptodate=0
+            printed=1
         # Check for not commited changes
         elif ! git_check_cached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Uncommitted changes)${C_OFF} "
             branch_done=1
             uptodate=0
+            printed=1
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Untracked files)${C_OFF} "
             branch_done=1
             uptodate=0
+            printed=1
         # If the "origin" URL is not defined in the project list, then no need
         # to check for synchronization, it is clean if there is no untracked,
         # uncached or uncommited changes.
         elif [[ -z $repo ]]; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_GREEN}Clean${C_OFF} "
+            printed=1
         fi
 
-        # Print information for local only repositories
-        [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}" && continue
+        # Add special information for local only repositories
+        if [[ -z $repo ]]; then
+            echo -e "${C_BLUE}[Local only repository]${C_OFF}"
+            continue
+        fi
 
-        # Finish the line
-        printf "\n"
+        # If something was printed, finish the line
+        [[ $printed -eq 1 ]] && printf "\n"
 
         # List branches of current repository
         git_branches "$dir"
