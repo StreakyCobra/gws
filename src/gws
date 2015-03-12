@@ -246,8 +246,8 @@ function read_projects()
         repo=$(cut -d${FIELD_SEP} -f2 <<< "$line" | tr -d '[[:space:]]')
         upstream=$(cut -d${FIELD_SEP} -f3 <<< "$line" | tr -d '[[:space:]]')
 
-        # Skip if the dir or repo is empty
-        { [ -z "$dir" ] || [ -z "$repo" ] ;} && continue
+        # Skip if the dir is empty
+        [ -z "$dir" ] && continue
 
         # Otherwise add the project to the list
         add_project "$dir" "$repo" "$upstream"
@@ -565,9 +565,20 @@ function cmd_update()
         # Check if repository already exists, and continue if it is the case
         if [ -d "$dir" ]; then
             # Print the information
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Already exists"
-            continue
+            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+        elif [[ -z $repo ]]; then
+            # Print the information
+            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF} " " " "No URL defined"
         fi
+
+        # Print information for local only repositories
+        [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}" && continue
+
+        # Finish the newline
+        printf "\n"
+
+        # Next repository if already existing
+        [[ -d "$dir" ]] && continue
 
         # Print the information
         printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
@@ -605,7 +616,8 @@ function cmd_status()
 
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
-            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Missing repository"
+            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
+            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}\n"
             uptodate=0
             continue
         fi
@@ -615,31 +627,46 @@ function cmd_status()
 
         # Cut branch name
         if [ ${#current} -gt $((MBL - 3)) ]; then
-            display_current="${current:0:$((MBL - 3))}…"
+            display_current="${current:0:$((MBL - 3))}… :"
         else
-            display_current="$current"
+            display_current="$current :"
         fi
         branch_done=0
 
+        # If there is no "origin" URL defined, don't print branch information (useless)
+        [[ -z $repo ]] && display_current=" "
+
         # Check for not commited not cached changes
         if ! git_check_uncached_uncommited "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
-            echo -e "${C_RED}Dirty (Uncached changes)${C_OFF}"
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_RED}Dirty (Uncached changes)${C_OFF} "
             branch_done=1
             uptodate=0
         # Check for not commited changes
         elif ! git_check_cached_uncommited "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
-            echo -e "${C_RED}Dirty (Uncommitted changes)${C_OFF}"
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_RED}Dirty (Uncommitted changes)${C_OFF} "
             branch_done=1
             uptodate=0
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current :"
-            echo -e "${C_RED}Dirty (Untracked files)${C_OFF}"
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_RED}Dirty (Untracked files)${C_OFF} "
             branch_done=1
             uptodate=0
+        # If the "origin" URL is not defined in the project list, then no need
+        # to check for synchronization, it is clean if there is no untracked,
+        # uncached or uncommited changes.
+        elif [[ -z $repo ]]; then
+            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_GREEN}Clean${C_OFF} "
         fi
+
+        # Print information for local only repositories
+        [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}" && continue
+
+        # Finish the line
+        printf "\n"
 
         # List branches of current repository
         git_branches "$dir"

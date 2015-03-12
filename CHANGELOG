@@ -2,6 +2,7 @@
 =====
 
 * Allow comments in configuration files (projects and ignore files)
+* Recognize local only repositories and the information in `status`.
 * Code cleaning (Use herestring, avoid pipes)
 * Different bugs correction:
   - #2
