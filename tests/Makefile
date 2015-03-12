@@ -22,8 +22,12 @@ $(WORKSPACE):
 	git clone https://github.com/dgorissen/coursera-dl $(WORKSPACE)/tools/coursera-dl
 	cd $(WORKSPACE)/tools/coursera-dl; git co master
 	git init $(WORKSPACE)/tools/emptyyyy
-	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/ignoring/aur
-	cd $(WORKSPACE)/ignoring/aur; git co develop
+	git init $(WORKSPACE)/tools/another
+	cd $(WORKSPACE)/tools/another; \
+		git co -b aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiiccccc; \
+		touch test; git add test; git ci -m message 
+	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/ignoring/gws
+	cd $(WORKSPACE)/ignoring/gws; git co develop
 
 $(WORKSPACE)/.ignore.gws: $(WORKSPACE)
 	echo "^ignoring/" > $@

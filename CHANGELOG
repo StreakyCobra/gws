@@ -1,3 +1,14 @@
+0.1.6
+=====
+
+* Allow comments in configuration files (projects and ignore files)
+* Recognize local only repositories and the information in `status`.
+* Code cleaning (Use herestring, avoid pipes)
+* Different bugs correction:
+  - #2
+  - #3
+  - #6
+
 0.1.5
 =====
 
@@ -11,8 +22,8 @@
 =====
 
 * Update `ff` command to also fast-forward non-active branches
-* Bugs correction
-  * init was not working
+* Bugs correction:
+  - init was not working
 
 0.1.3
 =====

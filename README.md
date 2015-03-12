@@ -4,8 +4,8 @@ gws
 `gws` is a KISS, bash, colorful helper to manage workspaces composed of git
 repositories.
 
-SHOW ME IMAGES!
----------------
+SHOW ME PICTURES!
+-----------------
 
 Here are some screen captures of `gws`:
 
@@ -28,7 +28,7 @@ Installation
 * **Other Linux**: You simply need to have the `src/gws` bash script somewhere
   inside your `$PATH`:
 
-  * If someone made a package for you distribution you are lucky.
+  * If someone made a package for your distribution you are lucky.
 
   * You can put it directly in `/bin` as root user, but it is complicated to
     keep it up-to-date.
@@ -64,15 +64,15 @@ and then
 
 * Do some hacking.
 
-* Show the status of the workspace with `gws`. It permits to know which
-  repositories are clean, which one have uncommited changes, or even to know
-  which one are not up-to-date with master.
+* Show the status of the workspace with `gws`. It reveals which repositories are
+  clean, which ones have uncommited changes, or even to know which ones are not
+  up-to-date with `origin`.
 
 ### But better
 
-Let say you made a `~/dev/` workspace folder and you created your `.project.gws`
-list in it. Then you workspace became really easy to replicate! Just make this
-`~/dev` folder a git repository, add two files and commit them:
+Let's say you made a `~/dev/` workspace folder and you created your
+`.project.gws` list in it. Then your workspace became really easy to replicate!
+Just make this `~/dev` folder a git repository, add two files and commit them:
 `.projects.gws` and the following `.gitignore`:
 
     # Ignore everything, so all repositories in our case
@@ -95,10 +95,10 @@ that you where having at home.
 Why?
 ----
 
-If you are, like me, a Linux programmer/hacker/coder who use heavily git, you
+If you are, like me, a Linux programmer/hacker/coder who uses heavily git, you
 certainly have a directory in your home folder named `dev`, `workspace`, `code`
 or something else that contains all the projects you are working on. For
-instance my currently is:
+instance my current organisation is:
 
     dev
     ├── archlinux
@@ -264,3 +264,12 @@ This project aims to stay simple. I will try to keep the project as alive as
 possible for a bash script, by correcting bugs and maybe some improvements.
 Also, maybe one day, if I have time, I will rewrite all this script in python or
 other more maintainable language.
+
+Contributors
+------------
+
+Many thanks to these people for code contributions:
+
+- Frédéric Mahé
+- Blount
+
