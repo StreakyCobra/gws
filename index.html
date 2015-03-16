@@ -84,14 +84,17 @@ including <code>export PATH="$PATH:/path/to/scripts/dir"</code> in your
 <code>~/dev</code>) and fill it with the projects informations (see
 <a href="#projectsgws">Syntaxes below</a>):</p>
 
-<pre><code>  work/tools/q | https://github.com/harelba/q.git
+<pre><code>  # Work related
+  work/tools/q | https://github.com/harelba/q.git
+
+  # Other
   contrib/gws  | https://github.com/StreakyCobra/gws.git
   contrib/peru | https://github.com/buildinspace/peru
 </code></pre>
 </li>
 </ul>
 
-<p>or</p>
+<p><strong>or</strong></p>
 
 <ul>
 <li>
@@ -104,7 +107,7 @@ with:</p>
 </li>
 </ul>
 
-<p>and then</p>
+<p><strong>and then</strong></p>
 
 <ul>
 <li><p>Clone all missing repositories with <code>gws update</code>.</p></li>
@@ -181,7 +184,7 @@ become a helper to sync, monitor and check workspaces.</p>
 small documentation, and there it is. I hope you will enjoy it!</p>
 
 <h2>
-<a id="what-it-does" class="anchor" href="#what-it-does" aria-hidden="true"><span class="octicon octicon-link"></span></a>What it does</h2>
+<a id="functionalities" class="anchor" href="#functionalities" aria-hidden="true"><span class="octicon octicon-link"></span></a>Functionalities</h2>
 
 <p>This tool offers some functionalities, among which:</p>
 
@@ -277,11 +280,15 @@ Mainly used from time to time to check consistence of the workspace:</p>
 <p>knowing that:</p>
 
 <ul>
-<li><p>There can be blank lines, but no comments or anything else.</p></li>
-<li><p>The <em>name</em> can be any valid linux folder name not containing <code>|</code>.</p></li>
+<li><p>There can also be blank lines, comments or inline comments. Comments start
+with <code>#</code> until the end of the line.</p></li>
+<li><p>The <em>name</em> can be any valid linux folder name not containing <code>|</code> or <code>#</code>.</p></li>
 <li><p>The <em>urls</em> are passed to git as-is, so can be anything accepted by git, but
-must not contain <code>|</code>.</p></li>
-<li><p>The <em>upstream_url</em> will be mapped to the <code>upstream</code> remote in git</p></li>
+must not contain <code>|</code> or <code>#</code>. For instance if you have SSH aliases in your
+config they are accepted.</p></li>
+<li><p>The <em>url</em> will be used for cloning the repository, thus mapped to the
+<code>origin</code> remote.</p></li>
+<li><p>The <em>upstream_url</em> will be mapped to the <code>upstream</code> remote in git.</p></li>
 </ul>
 
 <h3>
@@ -315,14 +322,14 @@ projects name. Some examples:</p>
 needed nor accessible.</p>
 
 <h2>
-<a id="some-misc-informations" class="anchor" href="#some-misc-informations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some misc informations</h2>
+<a id="other-thoughts" class="anchor" href="#other-thoughts" aria-hidden="true"><span class="octicon octicon-link"></span></a>Other thoughts</h2>
 
 <ul>
 <li><p>Except for cloning repositories, this script has not for goal to interact
 with your repositories. So no <code>pull all</code>, <code>push all</code>, <code>delete all unused</code>,
-functionnality will be implemented. This will imply too much checking to
-ensure no loose of informations. Instead, just look the satus of
-the repositories and do needed actions manually on regular basis.</p></li>
+functionnality will be implemented (except fast-forward). This will imply too
+much checking to ensure no loose of informations. Instead, just look the satus
+of the repositories and do needed actions manually on regular basis.</p></li>
 <li><p>You can use the commands from any subfolder of the workspace (as <code>git</code> does
 for instance).</p></li>
 <li><p>The file <code>.projects.gws</code> can easily be verisonned to sync the list of
@@ -343,10 +350,14 @@ possible for a bash script, by correcting bugs and maybe some improvements.
 Also, maybe one day, if I have time, I will rewrite all this script in python or
 other more maintainable language.</p>
 
+<p><em>Edit:</em> It seems there will be a continuation of this idea, and it will be
+written in OCaml! I'll let you know if the project maturate! In any case this
+project will stay here for users who want something simple and portable.</p>
+
 <h2>
 <a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributors</h2>
 
-<p>Many thanks to these people for code/doc contributions:</p>
+<p>Many thanks to these people for contributions:</p>
 
 <ul>
 <li>Frédéric Mahé</li>
