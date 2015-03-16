@@ -50,11 +50,14 @@ QuickStart
   `~/dev`) and fill it with the projects informations (see
   [Syntaxes below](#projectsgws)):
 
+        # Work related
         work/tools/q | https://github.com/harelba/q.git
+
+        # Other
         contrib/gws  | https://github.com/StreakyCobra/gws.git
         contrib/peru | https://github.com/buildinspace/peru
 
-or
+**or**
 
 * Let it detect existing repositories and create the `.projects.gws` for you
   with:
@@ -62,7 +65,7 @@ or
         $ cd path/to/your/workspace
         $ gws init
 
-and then
+**and then**
 
 * Clone all missing repositories with `gws update`.
 
@@ -135,8 +138,8 @@ become a helper to sync, monitor and check workspaces.
 I thought it can be useful to other people, so I made a little cleanup, write a
 small documentation, and there it is. I hope you will enjoy it!
 
-What it does
-------------
+Functionalities
+---------------
 
 This tool offers some functionalities, among which:
 
@@ -209,14 +212,19 @@ or
 
 knowing that:
 
-* There can be blank lines, but no comments or anything else.
+* There can also be blank lines, comments or inline comments. Comments start
+  with `#` until the end of the line.
 
-* The *name* can be any valid linux folder name not containing `|`.
+* The *name* can be any valid linux folder name not containing `|` or `#`.
 
 * The *urls* are passed to git as-is, so can be anything accepted by git, but
-  must not contain `|`.
+  must not contain `|` or `#`. For instance if you have SSH aliases in your
+  config they are accepted.
 
-* The *upstream_url* will be mapped to the `upstream` remote in git
+* The *url* will be used for cloning the repository, thus mapped to the
+  `origin` remote.
+
+* The *upstream_url* will be mapped to the `upstream` remote in git.
 
 ### .ignore.gws
 
@@ -238,14 +246,14 @@ projects name. Some examples:
 This function is really usefull for ignoring locally some projects that are not
 needed nor accessible.
 
-Some misc informations
-----------------------
+Other thoughts
+--------------
 
 * Except for cloning repositories, this script has not for goal to interact
   with your repositories. So no `pull all`, `push all`, `delete all unused`,
-  functionnality will be implemented. This will imply too much checking to
-  ensure no loose of informations. Instead, just look the satus of
-  the repositories and do needed actions manually on regular basis.
+  functionnality will be implemented (except fast-forward). This will imply too
+  much checking to ensure no loose of informations. Instead, just look the satus
+  of the repositories and do needed actions manually on regular basis.
 
 * You can use the commands from any subfolder of the workspace (as `git` does
   for instance).
@@ -269,10 +277,14 @@ possible for a bash script, by correcting bugs and maybe some improvements.
 Also, maybe one day, if I have time, I will rewrite all this script in python or
 other more maintainable language.
 
+*Edit:* It seems there will be a continuation of this idea, and it will be
+written in OCaml! I'll let you know if the project maturate! In any case this
+project will stay here for users who want something simple and portable.
+
 Contributors
 ------------
 
-Many thanks to these people for code/doc contributions:
+Many thanks to these people for contributions:
 
 - Frédéric Mahé
 - Blount
