@@ -25,8 +25,8 @@ Installation
 * **Arch Linux**: Install the [gws](https://aur.archlinux.org/packages/gws/)
   package from AUR
 
-* **Other Linux**: You simply need to have the `src/gws` bash script somewhere
-  inside your `$PATH`:
+* **Other Linux/Mac**: You simply need to have the `src/gws` bash script
+  somewhere inside your `$PATH`:
 
   * If someone made a package for your distribution you are lucky.
 
@@ -38,6 +38,10 @@ Installation
     `$PATH`. (I should also suggest you to have a look at
     [peru](https://github.com/buildinspace/peru) which permits to keep files
     from different sources up to date with one command).
+
+  * For `bash` you can include any directory on your `$PATH` by
+    including `export PATH="$PATH:/path/to/scripts/dir"` in your
+    `~/.bashrc` file.
 
 QuickStart
 ----------
@@ -268,8 +272,8 @@ other more maintainable language.
 Contributors
 ------------
 
-Many thanks to these people for code contributions:
+Many thanks to these people for code/doc contributions:
 
 - Frédéric Mahé
 - Blount
-
+- Alex Sanchez
