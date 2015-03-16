@@ -212,14 +212,19 @@ or
 
 knowing that:
 
-* There can also be blank lines, comments or inline comments.
+* There can also be blank lines, comments or inline comments. Comments start
+  with `#` until the end of the line.
 
 * The *name* can be any valid linux folder name not containing `|` or `#`.
 
 * The *urls* are passed to git as-is, so can be anything accepted by git, but
-  must not contain `|` or `#`.
+  must not contain `|` or `#`. For instance if you have SSH aliases in your
+  config they are accepted.
 
-* The *upstream_url* will be mapped to the `upstream` remote in git
+* The *url* will be used for cloning the repository, thus mapped to the
+  `origin` remote.
+
+* The *upstream_url* will be mapped to the `upstream` remote in git.
 
 ### .ignore.gws
 
