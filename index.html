@@ -35,7 +35,7 @@
 repositories.</p>
 
 <h2>
-<a id="show-me-images" class="anchor" href="#show-me-images" aria-hidden="true"><span class="octicon octicon-link"></span></a>SHOW ME IMAGES!</h2>
+<a id="show-me-pictures" class="anchor" href="#show-me-pictures" aria-hidden="true"><span class="octicon octicon-link"></span></a>SHOW ME PICTURES!</h2>
 
 <p>Here are some screen captures of <code>gws</code>:</p>
 
@@ -53,14 +53,23 @@ repositories.</p>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <ul>
+<li><p><strong>Arch Linux</strong>: Install the <a href="https://aur.archlinux.org/packages/gws/">gws</a>
+package from AUR</p></li>
 <li>
-<strong>Arch Linux</strong>: Install the <a href="https://aur.archlinux.org/packages/gws/">gws</a>
-package from AUR</li>
-<li>
-<strong>Other Linux</strong>: You simply need to have the <code>src/gws</code> bash script somewhere
-inside your <code>$PATH</code>. Maybe take a look at
-<a href="https://github.com/buildinspace/peru">peru</a> which permits to put files
-somewhere in your system (<code>~/bin</code> for instance) and keep them synchronized.</li>
+<p><strong>Other Linux</strong>: You simply need to have the <code>src/gws</code> bash script somewhere
+inside your <code>$PATH</code>:</p>
+
+<ul>
+<li><p>If someone made a package for your distribution you are lucky.</p></li>
+<li><p>You can put it directly in <code>/bin</code> as root user, but it is complicated to
+keep it up-to-date.</p></li>
+<li><p>Otherwise, it is also possible to put it in your home folder, for example
+in <code>~/.local/bin</code>. But you have to be sure that this folder is in your
+<code>$PATH</code>. (I should also suggest you to have a look at
+<a href="https://github.com/buildinspace/peru">peru</a> which permits to keep files
+from different sources up to date with one command).</p></li>
+</ul>
+</li>
 </ul>
 
 <h2>
@@ -86,8 +95,8 @@ somewhere in your system (<code>~/bin</code> for instance) and keep them synchro
 <p>Let it detect existing repositories and create the <code>.projects.gws</code> for you
 with:</p>
 
-<pre><code>$ cd path/to/your/workspace
-$ gws init
+<pre><code>  $ cd path/to/your/workspace
+  $ gws init
 </code></pre>
 </li>
 </ul>
@@ -95,19 +104,19 @@ $ gws init
 <p>and then</p>
 
 <ul>
-<li>Clone all missing repositories with <code>gws update</code>.</li>
-<li>Do some hacking.</li>
-<li>Show the status of the workspace with <code>gws</code>. It permits to know which
-repositories are clean, which one have uncommited changes, or even to know
-which one are not up-to-date with master.</li>
+<li><p>Clone all missing repositories with <code>gws update</code>.</p></li>
+<li><p>Do some hacking.</p></li>
+<li><p>Show the status of the workspace with <code>gws</code>. It reveals which repositories are
+clean, which ones have uncommited changes, or even to know which ones are not
+up-to-date with <code>origin</code>.</p></li>
 </ul>
 
 <h3>
 <a id="but-better" class="anchor" href="#but-better" aria-hidden="true"><span class="octicon octicon-link"></span></a>But better</h3>
 
-<p>Let say you made a <code>~/dev/</code> workspace folder and you created your <code>.project.gws</code>
-list in it. Then you workspace became really easy to replicate! Just make this
-<code>~/dev</code> folder a git repository, add two files and commit them:
+<p>Let's say you made a <code>~/dev/</code> workspace folder and you created your
+<code>.project.gws</code> list in it. Then your workspace became really easy to replicate!
+Just make this <code>~/dev</code> folder a git repository, add two files and commit them:
 <code>.projects.gws</code> and the following <code>.gitignore</code>:</p>
 
 <pre><code># Ignore everything, so all repositories in our case
@@ -131,10 +140,10 @@ that you where having at home.</p>
 <h2>
 <a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?</h2>
 
-<p>If you are, like me, a Linux programmer/hacker/coder who use heavily git, you
+<p>If you are, like me, a Linux programmer/hacker/coder who uses heavily git, you
 certainly have a directory in your home folder named <code>dev</code>, <code>workspace</code>, <code>code</code>
 or something else that contains all the projects you are working on. For
-instance my currently is:</p>
+instance my current organisation is:</p>
 
 <pre><code>dev
 ├── archlinux
@@ -179,8 +188,8 @@ small documentation, and there it is. I hope you will enjoy it!</p>
 described by their names, their repository urls, and optionaly an upstream
 url (mapped as a git remote named <code>upstream</code>), like:</p>
 
-<pre><code>work/theSoftware | git@github.com:You/theSoftware.git
-perso/gws        | git@github.com:You/gws.git         | git@github.com:StreakyCobra/gws.git
+<pre><code>  work/theSoftware | git@github.com:You/theSoftware.git
+  perso/gws        | git@github.com:You/gws.git         | git@github.com:StreakyCobra/gws.git
 </code></pre>
 </li>
 <li>
@@ -188,14 +197,14 @@ perso/gws        | git@github.com:You/gws.git         | git@github.com:StreakyCo
 expressions which discard some specific projects, for instance to disable on
 your home computer the work-related projects.</p>
 
-<pre><code>^work/
+<pre><code>  ^work/
 </code></pre>
 </li>
 <li>
 <p>It can detect already existing repositories and create the projects list
 from that.</p>
 
-<pre><code>$ gws init
+<pre><code>  $ gws init
 </code></pre>
 </li>
 <li>
@@ -204,19 +213,19 @@ supress them in case of removal, you have to do it yourself for safety
 reason. Notice that there is the <code>check</code> functionnality to identify
 those unlisted repositories).</p>
 
-<pre><code>$ gws update
+<pre><code>  $ gws update
 </code></pre>
 </li>
 <li>
 <p>It can monitor all listed repositories in one command (uncommitted changes,
 untracked changes, branches not synced with origin, ...).</p>
 
-<pre><code>$ gws status
+<pre><code>  $ gws status
 </code></pre>
 
 <p>or simply</p>
 
-<pre><code>$ gws
+<pre><code>  $ gws
 </code></pre>
 </li>
 <li>
@@ -224,7 +233,7 @@ untracked changes, branches not synced with origin, ...).</p>
 usefull te be sure to have the latest modifications, for instance before
 going to take the train with no internet connection:</p>
 
-<pre><code>$ gws fetch
+<pre><code>  $ gws fetch
 </code></pre>
 </li>
 <li>
@@ -232,7 +241,7 @@ going to take the train with no internet connection:</p>
 all repositories (but fast-forward only). Syntactic sugar to avoid a <code>gws
 fetch</code> and then many merges:</p>
 
-<pre><code>$ gws ff    # Mnemonic: ff=fast-forward
+<pre><code>  $ gws ff    # Mnemonic: ff=fast-forward
 </code></pre>
 </li>
 <li>
@@ -241,7 +250,7 @@ missing). Note: This command can be quite slow in large repositories (e.g.
 home folder, because it need to search entire space for unknown repository.
 Mainly used from time to time to check consistence of the workspace:</p>
 
-<pre><code>$ gws check
+<pre><code>  $ gws check
 </code></pre>
 </li>
 </ul>
@@ -299,7 +308,8 @@ projects name. Some examples:</p>
 </li>
 </ul>
 
-<p>This function is really</p>
+<p>This function is really usefull for ignoring locally some projects that are not
+needed nor accessible.</p>
 
 <h2>
 <a id="some-misc-informations" class="anchor" href="#some-misc-informations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some misc informations</h2>
@@ -329,6 +339,16 @@ folder) because it searches all existing git projects recursively.</p></li>
 possible for a bash script, by correcting bugs and maybe some improvements.
 Also, maybe one day, if I have time, I will rewrite all this script in python or
 other more maintainable language.</p>
+
+<h2>
+<a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributors</h2>
+
+<p>Many thanks to these people for code contributions:</p>
+
+<ul>
+<li>Frédéric Mahé</li>
+<li>Blount</li>
+</ul>
       </section>
     </div>
 
