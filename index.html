@@ -56,8 +56,8 @@ repositories.</p>
 <li><p><strong>Arch Linux</strong>: Install the <a href="https://aur.archlinux.org/packages/gws/">gws</a>
 package from AUR</p></li>
 <li>
-<p><strong>Other Linux</strong>: You simply need to have the <code>src/gws</code> bash script somewhere
-inside your <code>$PATH</code>:</p>
+<p><strong>Other Linux/Mac</strong>: You simply need to have the <code>src/gws</code> bash script
+somewhere inside your <code>$PATH</code>:</p>
 
 <ul>
 <li><p>If someone made a package for your distribution you are lucky.</p></li>
@@ -68,6 +68,9 @@ in <code>~/.local/bin</code>. But you have to be sure that this folder is in you
 <code>$PATH</code>. (I should also suggest you to have a look at
 <a href="https://github.com/buildinspace/peru">peru</a> which permits to keep files
 from different sources up to date with one command).</p></li>
+<li><p>For <code>bash</code> you can include any directory on your <code>$PATH</code> by
+including <code>export PATH="$PATH:/path/to/scripts/dir"</code> in your
+<code>~/.bashrc</code> file.</p></li>
 </ul>
 </li>
 </ul>
@@ -343,11 +346,12 @@ other more maintainable language.</p>
 <h2>
 <a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributors</h2>
 
-<p>Many thanks to these people for code contributions:</p>
+<p>Many thanks to these people for code/doc contributions:</p>
 
 <ul>
 <li>Frédéric Mahé</li>
 <li>Blount</li>
+<li>Alex Sanchez</li>
 </ul>
       </section>
     </div>
