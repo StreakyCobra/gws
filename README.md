@@ -45,6 +45,9 @@ Installation
     including `export PATH="$PATH:/path/to/scripts/dir"` in your
     `~/.bashrc` file.
 
+  * On Mac OS X, it may be necessary to upgrade bash to have a version `> 4.0`.
+    It could be done with: `brew install bash`.
+
 QuickStart
 ----------
 
