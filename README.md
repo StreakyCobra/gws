@@ -22,6 +22,8 @@ Here are some screen captures of `gws`:
 Installation
 ------------
 
+**Requirements:** `git`, `bash > 4.0`
+
 * **Arch Linux**: Install the [gws](https://aur.archlinux.org/packages/gws/)
   package from AUR
 
