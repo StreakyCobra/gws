@@ -22,6 +22,8 @@ Here are some screen captures of `gws`:
 Installation
 ------------
 
+**Requirements:** `git`, `bash > 4.0`
+
 * **Arch Linux**: Install the [gws](https://aur.archlinux.org/packages/gws/)
   package from AUR
 
@@ -42,6 +44,9 @@ Installation
   * For `bash` you can include any directory on your `$PATH` by
     including `export PATH="$PATH:/path/to/scripts/dir"` in your
     `~/.bashrc` file.
+
+  * On Mac OS X, it may be necessary to upgrade bash to have a version `> 4.0`.
+    It could be done with: `brew install bash`.
 
 QuickStart
 ----------
