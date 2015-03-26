@@ -67,6 +67,9 @@ FIELD_SEP='|'
 # Git name of the origin branch of repositories
 GIT_ORIGIN="origin"
 
+# Git name of the default branch of repositories
+GIT_BRANCH="master"
+
 # Git name of the upstream branch of repositories
 GIT_UPSTREAM="upstream"
 
@@ -233,7 +236,7 @@ function exists_project()
 # Read the list of projects from the projects list file
 function read_projects()
 {
-    local dir repo upstream
+    local dir repo branch upstream
 
     # Read line by line (discard comments and empty lines)
     while read line
@@ -244,13 +247,14 @@ function read_projects()
         # Read the line fields
         dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | tr -d '[[:space:]]')
         repo=$(cut -d${FIELD_SEP} -f2 <<< "$line" | tr -d '[[:space:]]')
-        upstream=$(cut -d${FIELD_SEP} -f3 <<< "$line" | tr -d '[[:space:]]')
+        branch=$(cut -d${FIELD_SEP} -f3 <<< "$line" | tr -d '[[:space:]]')
+        upstream=$(cut -d${FIELD_SEP} -f4 <<< "$line" | tr -d '[[:space:]]')
 
         # Skip if the dir is empty
         [ -z "$dir" ] && continue
 
         # Otherwise add the project to the list
-        add_project "$dir" "$repo" "$upstream"
+        add_project "$dir" "$repo" "$branch" "$upstream"
     done < <(grep -v "^#\|^$" $PROJECTS_FILE)
 
     # Extract sorted index of projects
@@ -291,10 +295,17 @@ function get_repo_url()
     return 0
 }
 
+# Get the upstream branch from associative array values
+function get_upstream_branch()
+{
+    cut -d${FIELD_SEP} -f2 <<< "$1"
+    return 0
+}
+
 # Get the upstream url from associative array values
 function get_upstream_url()
 {
-    cut -d${FIELD_SEP} -f2 <<< "$1"
+    cut -d${FIELD_SEP} -f3 <<< "$1"
     return 0
 }
 
@@ -308,7 +319,7 @@ function git_clone()
     local cmd
 
     # Git command to execute
-    cmd=( "git" "clone" "$1" "$2" )
+    cmd=( "git" "clone" "-b" "$1" "$2" "$3" )
 
     # Run the command and print the output in case of error
     if ! output=$("${cmd[@]}" 2>&1); then
@@ -406,6 +417,20 @@ function git_remote()
 
     # Run the command and print the output
     (cd "$1" && "${cmd[@]}" | grep "$2" | head -n 1 | cut -d' ' -f1 | cut -d'	' -f 2 | tr -d ' ')
+
+    return 0
+}
+
+# Get the current branch name
+function git_origin()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "branch" )
+
+    # Run the command and print the output
+    (cd "$1" && "${cmd[@]}" | grep "*" | cut -d'*' -f 2 | tr -d ' ')
 
     return 0
 }
@@ -536,7 +561,7 @@ function cmd_init()
     # Create the list of repositories
     output=$(for dir in "${found[@]}"
     do
-        echo "$dir | $(git_remote $dir "${GIT_ORIGIN}") | $(git_remote $dir "${GIT_UPSTREAM}")"
+        echo "$dir | $(git_remote $dir "${GIT_ORIGIN}") | $(git_branch $dir "${GIT_BRANCH}") | $(git_remote $dir "${GIT_UPSTREAM}")"
     done)
 
     # Write the file if it is not empty
@@ -558,9 +583,10 @@ function cmd_update()
         # Get informations about the current project
         repo=$(get_repo_url "${projects[$dir]}")
         upstream=$(get_upstream_url "${projects[$dir]}")
+        branch=$(get_upstream_branch "${projects[$dir]}")
 
         # Print the repository
-        echo -e "${C_BLUE}$dir${C_OFF}:"
+        echo -e "${C_BLUE}$dir${C_OFF}: $branch"
 
         # Check if repository already exists, and continue if it is the case
         if [ -d "$dir" ]; then
@@ -584,7 +610,7 @@ function cmd_update()
         printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
 
         # Clone the repository
-        if ! git_clone "$repo" "$dir"; then
+        if ! git_clone "$branch" "$repo" "$dir"; then
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
             return 1
         fi
