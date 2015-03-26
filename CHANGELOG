@@ -1,3 +1,8 @@
+0.1.8
+=====
+
+* A second argument can be given to limit to a specific subfolder of the workspace
+
 0.1.6
 =====
 

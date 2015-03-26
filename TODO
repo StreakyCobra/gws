@@ -1,2 +1,1 @@
-* Permit a second command-line argument to restrict the folder (e.g. gws update work, gws status ., ...)
 * Check command: ignore recursively folder containing a workspace (.projects.gws)
