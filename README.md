@@ -209,11 +209,11 @@ Syntaxes
 
 One project per line. Must be of the form:
 
-    any/folder/name | url
+    any/folder/name | url | branch
 
 or
 
-    any/folder/name | url | upstream_url
+    any/folder/name | url | branch | upstream_url
 
 knowing that:
 
