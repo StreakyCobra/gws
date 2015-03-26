@@ -222,7 +222,7 @@ function is_project_root()
 function add_project()
 {
     # Add the project to the list
-    projects[$1]="$2${FIELD_SEP}$3"
+    projects[$1]="$2${FIELD_SEP}$3${FIELD_SEP}$4"
 
     return 0
 }
@@ -324,6 +324,26 @@ function git_clone()
     # Run the command and print the output in case of error
     if ! output=$("${cmd[@]}" 2>&1); then
         echo "$output"
+        return 1
+    fi
+
+    return 0
+}
+
+# Checkout branch a repository
+function git_checkout()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "checkout" "$2" )
+
+    # Run the command and print the output in case of error
+    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
+        return 1
+    fi
+
+    if [ -z "$output" ] ; then
         return 1
     fi
 
@@ -590,8 +610,19 @@ function cmd_update()
 
         # Check if repository already exists, and continue if it is the case
         if [ -d "$dir" ]; then
-            # Print the information
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+            local org_branch=$(git_branch $dir "${GIT_BRANCH}")
+            if [ "$org_branch" == "$branch" ]; then
+                # Print the information
+                printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+            else
+                # Clone the repository
+                if ! git_checkout "$dir" "$branch"; then
+                    printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
+                    return 1
+                else
+                    printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Switch branch from $org_branch to $branch"
+                fi
+            fi
         elif [[ -z $repo ]]; then
             # Print the information
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF} " " " "No URL defined"
