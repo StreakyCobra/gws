@@ -62,7 +62,7 @@ PROJECTS_FILE=".projects.gws"
 IGNORE_FILE=".ignore.gws"
 
 # Field separator in the projects list.
-FIELD_SEP='|'
+FIELD_SEP=','
 
 # Git name of the origin branch of repositories.
 GIT_ORIGIN="origin"
@@ -79,13 +79,70 @@ GIT_FOLDER=".git"
 # Indentation for status display.
 INDENT="    "
 
-# Max length of branch names. Used to align information about branches in status.
+# Max length of branch names. Used to align information about branches
+# in status.
 MBL=25
 
 # Status command.
 S_NONE=0
 S_FETCH=1
 S_FAST_FORWARD=2
+
+SCRIPTNAME=${0##*/}
+
+## Get the command to run.
+GIT_COMMAND2RUN="$1"
+
+function print_usage() {
+
+    echo "Usage: $SCRIPTNAME <command> [-b <branch>] [-f <project file>] [-h] [-i <ignore file>] [-o <origin>] [-s <separator>] [-u <upstream>]"
+    echo -e ""
+    echo -e " where <command> is:"
+    echo -e "      ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
+    echo -e "      ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
+    echo -e "      ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
+    echo -e "      ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
+    echo -e "      ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
+    echo -e "      ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
+}
+
+## Check the number of arguments. It has to be <= 14.
+if [ $# -eq 0 ] || [ $# -gt 14 ]; then
+    print_usage
+    exit 1
+fi
+
+## Parse the arguments.
+while getopts hb:i:f:o:s:u: OPT; do
+    case $OPT in
+        b|+b)
+            GIT_BRANCH="$OPTARG"
+            ;;
+        f|+f)
+            PROJECTS_FILE="$OPTARG"
+            ;;
+        h|+h)
+            usage
+            ;;
+        i|+i)
+            IGNORE_FILE="$OPTARG"
+            ;;
+        o|+o)
+            GIT_ORIGIN="$OPTARG"
+            ;;
+        s|+s)
+            FILED_SEP="$OPTARG"
+            ;;
+        u|+u)
+            GIT_UPSTREAM="$OPTARG"
+            ;;
+        *)
+            print_usage
+            exit 2
+    esac
+done
+shift $(( OPTIND - 1 ))
+OPTIND=1
 
 # Colors.
 if [[ -t 1 ]]; then
@@ -171,9 +228,10 @@ function remove_matching()
     return 0
 }
 
-# Remove elements from a list that have as prefix another element of the same list.
-# Used to remove subrepositories, e.g. the list ( foo/bar/ foo/ ). The element.
-# foo/bar/ has for prefix foo/, so removing foo/bar because it is a subrepository.
+# Remove elements from a list that have as prefix another element of
+# the same list.  Used to remove subrepositories, e.g. the list (
+# foo/bar/ foo/ ). The element.  foo/bar/ has for prefix foo/, so
+# removing foo/bar because it is a subrepository.
 function remove_prefixed()
 {
     local set_a a b ok
@@ -211,7 +269,8 @@ function is_project_root()
     # If there is a project file, this is a project root.
     (ls "$PROJECTS_FILE" 1>/dev/null 2>&1) && return 0
 
-    # If we reach root, and there is no projects file, exit with an error message.
+    # If we reach root, and there is no projects file, exit with an
+    # error message.
     [[ $(pwd) = "/" ]] && echo "Not in a workspace" && exit 1
 
     # Otherwise return failure. Must never be reached... normally.
@@ -221,7 +280,7 @@ function is_project_root()
 # Add a project to the list of projects.
 function add_project()
 {
-    # Add the project to the list
+    # Add the project to the list.
     projects[$1]="$2${FIELD_SEP}$3${FIELD_SEP}$4"
 
     return 0
@@ -868,23 +927,6 @@ function cmd_check()
     return 0
 }
 
-# Display the usage of this program.
-function usage()
-{
-    echo -e "gws is an helper to manage workspaces which contain git repositories."
-    echo -e ""
-    echo -e "Usage: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF}"
-    echo -e ""
-    echo -e "where <command> is:"
-    echo -e "    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
-    echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
-    echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
-    echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
-    echo -e "    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
-    echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
-    exit 1
-}
-
 # }}}.
 
 # Except for the special case of "init" in which there is no project files.
@@ -906,7 +948,7 @@ fi
 projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
 
 # Finally select the desired command.
-case $1 in
+case $GIT_COMMAND2RUN in
     "init")
         cmd_init
         ;;
@@ -928,7 +970,10 @@ case $1 in
     "--version"|"-v")
         echo -e "gws version ${C_RED}$VERSION${C_OFF}"
         ;;
-    *) usage ;;
+    *)
+        print_usage
+        exit 5
+        ;;
 esac
 
 # vim: fdm=marker.
