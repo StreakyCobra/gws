@@ -80,6 +80,10 @@ QuickStart
   clean, which ones have uncommited changes, or even to know which ones are not
   up-to-date with `origin`.
 
+* Pull from all upstream repositories: `gws pull` if you're in the
+  repository directory or `gws pull -r <repository directory>` if
+  you're not on the repository directory.
+
 ### But better
 
 Let's say you made a `~/dev/` workspace folder and you created your
