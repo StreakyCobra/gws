@@ -37,6 +37,8 @@
 
 # }}}
 
+SCRIPTNAME=${0##*/}
+
 # {{{ Bash options
 
 # Uncomment for Debug.
@@ -88,14 +90,15 @@ S_NONE=0
 S_FETCH=1
 S_FAST_FORWARD=2
 
-SCRIPTNAME=${0##*/}
+## The repository directory defaults to the current directory.
+REPO_DIR=$(pwd)
 
 ## Get the command to run.
 GIT_COMMAND2RUN="$1"
 
 function print_usage() {
 
-    echo "Usage: $SCRIPTNAME <command> [-b <branch>] [-f <project file>] [-h] [-i <ignore file>] [-o <origin>] [-s <separator>] [-u <upstream>]"
+    echo "Usage: $SCRIPTNAME <command> [-b <branch>] [-f <project file>] [-h] [-i <ignore file>] [-o <origin>] [-r <repository directory>] [-s <separator>] [-u <upstream>]"
     echo -e ""
     echo -e " where <command> is:"
     echo -e "      ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
@@ -104,6 +107,7 @@ function print_usage() {
     echo -e "      ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
     echo -e "      ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
     echo -e "      ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
+    echo -e "      ${C_BLUE}pull${C_OFF}   - Pulls from the upstreams."
 }
 
 ## Check the number of arguments. It has to be <= 14.
@@ -129,6 +133,9 @@ while getopts hb:i:f:o:s:u: OPT; do
             ;;
         o|+o)
             GIT_ORIGIN="$OPTARG"
+            ;;
+        r|+r)
+            REPO_DIR="$OPTARG"
             ;;
         s|+s)
             FILED_SEP="$OPTARG"
@@ -943,6 +950,21 @@ if [[ "$1" != "init" ]]; then
     read_ignored
 fi
 
+## Pulls all changes from the upstream repos.
+## $1: Top repository directory.
+function pull_from_repos() {
+    local repo_dir=$1 i
+    [ -d "$repo_dir" ] || (echo "No such directory: $repo_dir." && exit 7)
+    ## CD to the repository directory.
+    cd "$repo_dir"
+    ## Loop over all repo directories and pull.
+    for i in $(ls -d */); do
+        cd "$i"
+        echo "Pulling in: $i"
+        git pull
+        cd "$repo_dir"
+    done
+}
 
 # Remove ignored projects.
 projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
@@ -966,6 +988,9 @@ case $GIT_COMMAND2RUN in
         ;;
     "check")
         cmd_check
+        ;;
+    "pull")
+        pull_from_repos $REPO_DIR
         ;;
     "--version"|"-v")
         echo -e "gws version ${C_RED}$VERSION${C_OFF}"
