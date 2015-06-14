@@ -67,6 +67,9 @@ CACHE_FILE=".cache.gws"
 # Field separator in the projects list
 FIELD_SEP='|'
 
+# Array lines separator
+ARRAY_LINE_SEP=', '
+
 # Separator between the URL and its name in config file
 URL_NAME_SEP=' '
 
@@ -251,7 +254,7 @@ function is_project_root()
 function add_project()
 {
     # Add the project to the list
-    projects[$1]="$2${FIELD_SEP}$3"
+    projects[$1]="$2"
 
     return 0
 }
@@ -265,7 +268,7 @@ function exists_project()
 # Read the list of projects from the projects list file
 function read_projects()
 {
-    local line dir remotes count repo upstream
+    local line dir remotes count repo upstream remotes_list
 
     # Read line by line (discard comments and empty lines)
     while read line
@@ -280,6 +283,7 @@ function read_projects()
 
         # We get all the remotes
         count=0
+        remotes_list=""
         while [ -n "$remotes" ];
         do
             count=$((count + 1))
@@ -304,18 +308,15 @@ function read_projects()
                     exit 1
                 fi
             fi
+
+            remotes_list+="${remote_name}${FIELD_SEP}${remote_url}${ARRAY_LINE_SEP}"
         done
 
-        # Read the line fields
-        dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | tr -d '[[:space:]]')
-        repo=$(cut -d${FIELD_SEP} -f2 <<< "$line" | tr -d '[[:space:]]')
-        upstream=$(cut -d${FIELD_SEP} -f3 <<< "$line" | tr -d '[[:space:]]')
-
         # Skip if the dir is empty
-        [ -z "$dir" ] && continue
+        [ -z "${dir}" ] && continue
 
         # Otherwise add the project to the list
-        add_project "$dir" "$repo" "$upstream"
+        add_project "${dir}" "${remotes_list}"
     done < <(grep -v "^#\|^$" $PROJECTS_FILE)
 
     # Extract sorted index of projects
@@ -372,14 +373,25 @@ function read_ignored()
 # Get the repo url from associative array values
 function get_repo_url()
 {
-    cut -d${FIELD_SEP} -f1 <<< "$1"
-    return 0
-}
+    local remote remote_name remote_url
+    declare -A assoc
 
-# Get the upstream url from associative array values
-function get_upstream_url()
-{
-    cut -d${FIELD_SEP} -f2 <<< "$1"
+    # Read the projects info
+    IFS=${ARRAY_LINE_SEP} read -a array <<< "$1"
+
+    # Check if origin is present
+    for remote in "${array[@]}";
+    do
+        remote_name=$(cut -d${FIELD_SEP} -f1 <<< ${remote})
+        remote_url=$(cut -d${FIELD_SEP} -f2 <<< ${remote})
+        assoc["${remote_name}"]="${remote_url}"
+    done
+
+    [ ${assoc[${GIT_ORIGIN}]+isset} ] || return 1
+
+    # Return the URL
+    cut -d${FIELD_SEP} -f2 <<< ${array[${GIT_ORIGIN}]}
+
     return 0
 }
 
@@ -482,7 +494,7 @@ function git_add_remote()
 }
 
 # Get a remote url
-function git_remote()
+function git_remote_url()
 {
     local cmd
 
@@ -493,6 +505,34 @@ function git_remote()
     (cd "$1" && "${cmd[@]}" | grep "$2" | head -n 1 | cut -d' ' -f1 | cut -d'	' -f 2 | tr -d ' ')
 
     return 0
+}
+
+# Get the list of remotes
+function git_remotes()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "remote" )
+
+    # Run the command and print the output
+    (cd "$1" && "${cmd[@]}")
+
+    return 0
+}
+
+# Check if a given remote name exists
+function git_remote_exists()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "remote" )
+
+    # Run the command
+    (cd "$1" && "${cmd[@]}" | grep "^$2\$") > /dev/null 2>&1
+
+    return $?
 }
 
 # Get the current branch name
@@ -611,7 +651,7 @@ function cmd_init()
     # Check if already a workspace
     [[ -f ${PROJECTS_FILE} ]] && echo -e "${C_RED}Already a workspace.${C_OFF}" && return 1
 
-    local found
+    local found remote
     declare -a found
 
     # Prepare the list of all existing projects, sorted
@@ -621,7 +661,12 @@ function cmd_init()
     # Create the list of repositories
     output=$(for dir in "${found[@]}"
     do
-        echo "$dir | $(git_remote $dir "${GIT_ORIGIN}") | $(git_remote $dir "${GIT_UPSTREAM}")"
+        echo -n "$dir | $(git_remote_url $dir "${GIT_ORIGIN}")"
+        for remote in $(git_remotes "$dir");
+        do
+            [[ "$remote" != "${GIT_ORIGIN}" ]] && echo -n " | $(git_remote_url $dir $remote) $remote"
+        done
+        echo
     done)
 
     # Write the file if it is not empty
@@ -635,14 +680,13 @@ function cmd_init()
 # Update command
 function cmd_update()
 {
-    local dir repo upstream
+    local dir repo upstream remote remote_name remote_url
 
     # For all projects
     for dir in "${projects_indexes[@]}"
     do
         # Get informations about the current project
         repo=$(get_repo_url "${projects[$dir]}")
-        upstream=$(get_upstream_url "${projects[$dir]}")
 
         # Print the repository
         echo -e "${C_BLUE}$dir${C_OFF}:"
@@ -663,21 +707,30 @@ function cmd_update()
         printf "\n"
 
         # Next repository if already existing
-        [[ -d "$dir" ]] && continue
+        if [[ ! -d "$dir" ]]; then 
 
-        # Print the information
-        printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
+            # Print the information
+            printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
 
-        # Clone the repository
-        if ! git_clone "$repo" "$dir"; then
-            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
-            return 1
+            # Clone the repository
+            if ! git_clone "$repo" "$dir"; then
+                printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
+                return 1
+            fi
+
+            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
         fi
 
-        # If an upstream url is set, add it
-        [[ ! -z "$upstream" ]] && git_add_remote "$dir" "$GIT_UPSTREAM" "$upstream"
-
-        printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
+        # Verify all remotes, create if not existing
+        IFS=${ARRAY_LINE_SEP} read -a array <<< "${projects[$dir]}"
+        for remote in "${array[@]}"
+        do
+            remote_name=$(cut -d${FIELD_SEP} -f1 <<< ${remote})
+            remote_url=$(cut -d${FIELD_SEP} -f2 <<< ${remote})
+            if ! git_remote_exists "${dir}" "${remote_name}"; then
+                git_add_remote "${dir}" "${remote_name}" "${remote_url}"
+            fi
+        done
     done
 
     return 0
