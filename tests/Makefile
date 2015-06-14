@@ -18,6 +18,8 @@ $(WORKSPACE):
 	cd $(WORKSPACE)/work/docker-gitlab; git co gh-pages
 	git clone https://github.com/harelba/q $(WORKSPACE)/tools/q
 	cd $(WORKSPACE)/tools/q; git co gh-pages
+	cd $(WORKSPACE)/tools/q; git remote add myone http://coool
+	cd $(WORKSPACE)/tools/q; git remote add upstream testurl
 	git clone https://github.com/buildinspace/peru $(WORKSPACE)/tools/peru
 	git clone https://github.com/dgorissen/coursera-dl $(WORKSPACE)/tools/coursera-dl
 	cd $(WORKSPACE)/tools/coursera-dl; git co master
