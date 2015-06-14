@@ -1,1 +1,2 @@
 * Check command: ignore recursively folder containing a workspace (.projects.gws)
+* Cache based on config file hashsum to avoid parsing each time
