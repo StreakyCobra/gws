@@ -61,6 +61,9 @@ PROJECTS_FILE=".projects.gws"
 # Name of the file containing the ignored patterns
 IGNORE_FILE=".ignore.gws"
 
+# Name of the file containing the cache
+CACHE_FILE=".cache.gws"
+
 # Field separator in the projects list
 FIELD_SEP='|'
 
@@ -282,6 +285,17 @@ function read_projects()
     # Extract sorted index of projects
     readarray -t projects_indexes < <(for a in "${!projects[@]}"; do echo "$a"; done | sort)
 
+    # Cache the result
+    if [[ ! ${#projects[@]} -eq 0 ]]; then
+        CACHED_PROJECTS_HASH=$(md5sum "${PROJECTS_FILE}")
+        sed -i '/^declare -A projects=/d' "${CACHE_FILE}"
+        sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+        sed -i '/^declare -- CACHED_PROJECTS_HASH=/d' "${CACHE_FILE}"
+        declare -p projects >> "${CACHE_FILE}"
+        declare -p projects_indexes >> "${CACHE_FILE}"
+        declare -p CACHED_PROJECTS_HASH >> "${CACHE_FILE}"
+    fi
+
     return 0
 }
 
@@ -306,6 +320,15 @@ function read_ignored()
         # Add it to the list of ignored patterns
         ignored_patterns+=( "$pattern" )
     done < <(grep -v "^#\|^$" $IGNORE_FILE)
+
+    # Cache the result
+    if [[ ! ${#ignored_patterns[@]} -eq 0 ]]; then
+        CACHED_IGNORE_HASH=$(md5sum "${IGNORE_FILE}")
+        sed -i '/^declare -a ignored_patterns=/d' "${CACHE_FILE}"
+        sed -i '/^declare -- CACHED_IGNORE_HASH=/d' "${CACHE_FILE}"
+        declare -p ignored_patterns >> "${CACHE_FILE}"
+        declare -p CACHED_IGNORE_HASH >> "${CACHE_FILE}"
+    fi
 
     return 0
 }
@@ -868,12 +891,27 @@ if [[ "$1" != "init" ]]; then
         cd ..
     done
 
-    # Then read the list of projects and ignore list
-    read_projects
-    read_ignored
+    # Read the cache if existing, create it if not existing.
+    [[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}" || touch "${CACHE_FILE}"
 
-    # Remove ignored projects
-    projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
+    # Parse the projects file if it is not cached or if it was updated
+    if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE})" ]]; then
+        read_projects
+        cache_corrupt=1
+    fi
+
+    # Parse the ignore file if it is not cached or if it was updated
+    if [[ -e "${IGNORE_FILE}" ]] && [[ "$CACHED_IGNORE_HASH" != "$(md5sum ${IGNORE_FILE})" ]]; then
+        read_ignored
+        cache_corrupt=1
+    fi
+
+    # Update projects index if cache is corrupted
+    if [[ -n "$cache_corrupt" ]]; then
+        projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
+        sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+        declare -p projects_indexes >> "${CACHE_FILE}"
+    fi
 
     # If a path is specified as second argument, limit projects to the ones matching
     # the path
