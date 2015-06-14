@@ -223,7 +223,7 @@ function keep_prefixed_projects()
     for dir in "${projects_indexes[@]}"
     do
         # Get its full path
-        current=$(cd $dir; pwd)/
+        current="${PWD}/${dir}/"
 
         # If it match, add it to the output
         [[ $current =~ ^$limit_to ]] && echo -n "$dir "
