@@ -64,6 +64,9 @@ IGNORE_FILE=".ignore.gws"
 # Field separator in the projects list
 FIELD_SEP='|'
 
+# Separator between the URL and its name in config file
+URL_NAME_SEP=' '
+
 # Git name of the origin branch of repositories
 GIT_ORIGIN="origin"
 
@@ -259,7 +262,7 @@ function exists_project()
 # Read the list of projects from the projects list file
 function read_projects()
 {
-    local dir repo upstream
+    local line dir remotes count repo upstream
 
     # Read line by line (discard comments and empty lines)
     while read line
@@ -267,6 +270,39 @@ function read_projects()
         # Remove inline comments
         line=$(sed -e 's/#.*$//' <<< "$line")
         
+        # We get the directory
+        dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        # We get the rest of the configuration line containing remotes
+        remotes=$(cut -d${FIELD_SEP} -f1 --complement <<< "$line")
+
+        # We get all the remotes
+        count=0
+        while [ -n "$remotes" ];
+        do
+            count=$((count + 1))
+            # We get the first defined remote in the "remotes" variable
+            remote=$(cut -d${FIELD_SEP} -f1 <<< "$remotes" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/[[:space:]]\+/ /g')
+            # We remove the current remote from the line for next iteration
+            remotes=$(cut -d${FIELD_SEP} -f1 -s --complement <<< "$remotes")
+            # We get its url
+            remote_url=$(cut -d"${URL_NAME_SEP}" -f1 <<< "$remote" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            # We get its name if any
+            remote_name=$(cut -d"${URL_NAME_SEP}" -f2 -s <<< "$remote")
+
+            # If name its not set we correct it
+            if [[ -z "$remote_name" ]]; then
+                if [[ $count == 1 ]]; then
+                    remote_name=$GIT_ORIGIN
+                elif [[ $count == 2 ]]; then
+                    remote_name=$GIT_UPSTREAM
+                else
+                    error_msg="${C_RED}The URL at position $count for \"$dir\" is missing a name.${C_OFF}"
+                    echo -e "$error_msg"
+                    exit 1
+                fi
+            fi
+        done
+
         # Read the line fields
         dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | tr -d '[[:space:]]')
         repo=$(cut -d${FIELD_SEP} -f2 <<< "$line" | tr -d '[[:space:]]')
