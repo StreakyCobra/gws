@@ -268,6 +268,17 @@ function exists_project()
 # Read the list of projects from the projects list file
 function read_projects()
 {
+    # Store cache state
+    CACHED_PROJECTS_HASH=$(md5sum "${PROJECTS_FILE}" 2>/dev/null || echo NONE)
+    sed -i '/^declare -- CACHED_PROJECTS_HASH=/d' "${CACHE_FILE}"
+    declare -p CACHED_PROJECTS_HASH >> "${CACHE_FILE}"
+
+    # Clear previous cache state
+    sed -i '/^declare -A projects=/d' "${CACHE_FILE}"
+    sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+    projects=()
+    projects_indexes=()
+
     local line dir remotes count repo upstream remotes_list
 
     # Read line by line (discard comments and empty lines)
@@ -324,13 +335,8 @@ function read_projects()
 
     # Cache the result
     if [[ ! ${#projects[@]} -eq 0 ]]; then
-        CACHED_PROJECTS_HASH=$(md5sum "${PROJECTS_FILE}")
-        sed -i '/^declare -A projects=/d' "${CACHE_FILE}"
-        sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
-        sed -i '/^declare -- CACHED_PROJECTS_HASH=/d' "${CACHE_FILE}"
         declare -p projects >> "${CACHE_FILE}"
         declare -p projects_indexes >> "${CACHE_FILE}"
-        declare -p CACHED_PROJECTS_HASH >> "${CACHE_FILE}"
     fi
 
     return 0
@@ -339,6 +345,15 @@ function read_projects()
 # Read the list of ignored patterns from the file
 function read_ignored()
 {
+    # Store cache state
+    CACHED_IGNORE_HASH=$(md5sum "${IGNORE_FILE}" 2>/dev/null || echo NONE)
+    sed -i '/^declare -- CACHED_IGNORE_HASH=/d' "${CACHE_FILE}"
+    declare -p CACHED_IGNORE_HASH >> "${CACHE_FILE}"
+
+    # Remove previous version in cache
+    sed -i '/^declare -a ignored_patterns=/d' "${CACHE_FILE}"
+    ignored_patterns=()
+
     [[ -e "$IGNORE_FILE" ]] || return 0
 
     local pattern
@@ -358,13 +373,9 @@ function read_ignored()
         ignored_patterns+=( "$pattern" )
     done < <(grep -v "^#\|^$" $IGNORE_FILE)
 
-    # Cache the result
+    # Cache the results
     if [[ ! ${#ignored_patterns[@]} -eq 0 ]]; then
-        CACHED_IGNORE_HASH=$(md5sum "${IGNORE_FILE}")
-        sed -i '/^declare -a ignored_patterns=/d' "${CACHE_FILE}"
-        sed -i '/^declare -- CACHED_IGNORE_HASH=/d' "${CACHE_FILE}"
         declare -p ignored_patterns >> "${CACHE_FILE}"
-        declare -p CACHED_IGNORE_HASH >> "${CACHE_FILE}"
     fi
 
     return 0
@@ -984,19 +995,11 @@ if [[ "$1" != "init" ]]; then
     [[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}" || touch "${CACHE_FILE}"
 
     # Parse the projects file if it is not cached or if it was updated
-    if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE})" ]]; then
+    if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE} 2>/dev/null || echo NONE)" ]] ||
+       [[ "$CACHED_IGNORE_HASH" != "$(md5sum ${IGNORE_FILE} 2>/dev/null || echo NONE)" ]]; then
         read_projects
-        cache_corrupt=1
-    fi
-
-    # Parse the ignore file if it is not cached or if it was updated
-    if [[ -e "${IGNORE_FILE}" ]] && [[ "$CACHED_IGNORE_HASH" != "$(md5sum ${IGNORE_FILE})" ]]; then
         read_ignored
-        cache_corrupt=1
-    fi
 
-    # Update projects index if cache is corrupted
-    if [[ -n "$cache_corrupt" ]]; then
         projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
         sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
         declare -p projects_indexes >> "${CACHE_FILE}"
