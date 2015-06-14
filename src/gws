@@ -442,12 +442,12 @@ function git_fast_forward()
 }
 
 # Add an upstream branch to a repository
-function git_add_upstream()
+function git_add_remote()
 {
     local cmd
 
     # Git command to execute
-    cmd=( "git" "remote" "add" "${GIT_UPSTREAM}" "$2")
+    cmd=( "git" "remote" "add" "$2" "$3")
 
     # Run the command and print the output in case of error
     if ! output=$(cd "$1" && "${cmd[@]}"); then
@@ -652,7 +652,7 @@ function cmd_update()
         fi
 
         # If an upstream url is set, add it
-        [[ ! -z "$upstream" ]] && git_add_upstream "$dir" "$upstream"
+        [[ ! -z "$upstream" ]] && git_add_remote "$dir" "$GIT_UPSTREAM" "$upstream"
 
         printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
     done
