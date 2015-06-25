@@ -279,14 +279,14 @@ function read_projects()
     projects=()
     projects_indexes=()
 
-    local line dir remotes count repo upstream remotes_list
+    local line dir remotes count repo remotes_list
 
     # Read line by line (discard comments and empty lines)
     while read line
     do
         # Remove inline comments
         line=$(sed -e 's/#.*$//' <<< "$line")
-        
+
         # We get the directory
         dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
         # We get the rest of the configuration line containing remotes
@@ -398,7 +398,7 @@ function get_repo_url()
         assoc["${remote_name}"]="${remote_url}"
     done
 
-    [ ${assoc[${GIT_ORIGIN}]+isset} ] || return 1
+    [ "${assoc[${GIT_ORIGIN}]+isset}" ] || return 1
 
     # Return the URL
     cut -d${FIELD_SEP} -f2 <<< ${array[${GIT_ORIGIN}]}
@@ -672,7 +672,7 @@ function cmd_init()
     # Create the list of repositories
     output=$(for dir in "${found[@]}"
     do
-        echo -n "$dir | $(git_remote_url $dir "${GIT_ORIGIN}")"
+        echo -n "$dir | $(git_remote_url "$dir" "${GIT_ORIGIN}")"
         for remote in $(git_remotes "$dir");
         do
             [[ "$remote" != "${GIT_ORIGIN}" ]] && echo -n " | $(git_remote_url $dir $remote) $remote"
@@ -691,7 +691,7 @@ function cmd_init()
 # Update command
 function cmd_update()
 {
-    local dir repo upstream remote remote_name remote_url
+    local dir repo remote remote_name remote_url
 
     # For all projects
     for dir in "${projects_indexes[@]}"
@@ -718,7 +718,7 @@ function cmd_update()
         printf "\n"
 
         # Next repository if already existing
-        if [[ ! -d "$dir" ]]; then 
+        if [[ ! -d "$dir" ]]; then
 
             # Print the information
             printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
@@ -750,7 +750,7 @@ function cmd_update()
 # Status command
 function cmd_status()
 {
-    local dir repo upstream branch branch_done rc uptodate printed
+    local dir repo branch branch_done rc uptodate printed
 
     uptodate=1
 
@@ -766,7 +766,8 @@ function cmd_status()
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
-            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}\n" || printf "\n"
+            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}"
+            printf "\n"
             uptodate=0
             continue
         fi
@@ -947,7 +948,7 @@ function cmd_check()
         fi
 
         # Check if it is listed as project and print according message
-        if exists_project $dir; then
+        if exists_project "$dir"; then
             printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Known"
         else
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Unknown"
@@ -992,7 +993,7 @@ if [[ "$1" != "init" ]]; then
     done
 
     # Read the cache if existing, create it if not existing.
-    [[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}" || touch "${CACHE_FILE}"
+    ([[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}") || touch "${CACHE_FILE}"
 
     # Parse the projects file if it is not cached or if it was updated
     if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE} 2>/dev/null || echo NONE)" ]] ||
