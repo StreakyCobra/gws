@@ -37,54 +37,121 @@
 
 # }}}
 
+SCRIPTNAME=${0##*/}
+
 # {{{ Bash options
 
-# Uncomment for Debug
+# Uncomment for Debug.
 # set -x
 
-# Propagate fail in pipes
+# Propagate fail in pipes.
 set -o pipefail
 
 # }}}
 
 # {{{ Parameters
 
-# Version number
+# Version number.
 VERSION="0.1.7"
 
-# Starting directory
+# Starting directory.
 START_PWD="$(pwd)"
 
-# Name of the file containing the projects list
+# Name of the file containing the projects list.
 PROJECTS_FILE=".projects.gws"
 
-# Name of the file containing the ignored patterns
+# Name of the file containing the ignored patterns.
 IGNORE_FILE=".ignore.gws"
 
-# Field separator in the projects list
-FIELD_SEP='|'
+# Field separator in the projects list.
+FIELD_SEP=','
 
-# Git name of the origin branch of repositories
+# Git name of the origin branch of repositories.
 GIT_ORIGIN="origin"
 
-# Git name of the upstream branch of repositories
+# Git name of the default branch of repositories.
+GIT_BRANCH="master"
+
+# Git name of the upstream branch of repositories.
 GIT_UPSTREAM="upstream"
 
-# Git folder name. Used to identify git unlisted repositories
+# Git folder name. Used to identify git unlisted repositories.
 GIT_FOLDER=".git"
 
-# Indentation for status display
+# Indentation for status display.
 INDENT="    "
 
-# Max length of branch names. Used to align information about branches in status
+# Max length of branch names. Used to align information about branches
+# in status.
 MBL=25
 
-# Status command
+# Status command.
 S_NONE=0
 S_FETCH=1
 S_FAST_FORWARD=2
 
-# Colors
+## The repository directory defaults to the current directory.
+REPO_DIR=$(pwd)
+
+## Get the command to run.
+GIT_COMMAND2RUN="$1"
+
+function print_usage() {
+
+    echo "Usage: $SCRIPTNAME <command> [-b <branch>] [-f <project file>] [-h] [-i <ignore file>] [-o <origin>] [-r <repository directory>] [-s <separator>] [-u <upstream>]"
+    echo -e ""
+    echo -e " where <command> is:"
+    echo -e "      ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
+    echo -e "      ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
+    echo -e "      ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
+    echo -e "      ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
+    echo -e "      ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
+    echo -e "      ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
+    echo -e "      ${C_BLUE}pull${C_OFF}   - Pulls from the upstreams."
+}
+
+## Check the number of arguments. It has to be <= 14.
+if [ $# -eq 0 ] || [ $# -gt 14 ]; then
+    print_usage
+    exit 1
+fi
+
+## Parse the arguments.
+while getopts hb:i:f:o:s:u: OPT; do
+    case $OPT in
+        b|+b)
+            GIT_BRANCH="$OPTARG"
+            ;;
+        f|+f)
+            PROJECTS_FILE="$OPTARG"
+            ;;
+        h|+h)
+            usage
+            ;;
+        i|+i)
+            IGNORE_FILE="$OPTARG"
+            ;;
+        o|+o)
+            GIT_ORIGIN="$OPTARG"
+            ;;
+        r|+r)
+            REPO_DIR="$OPTARG"
+            ;;
+        s|+s)
+            FILED_SEP="$OPTARG"
+            ;;
+        u|+u)
+            GIT_UPSTREAM="$OPTARG"
+            ;;
+        *)
+            print_usage
+            exit 2
+    esac
+done
+shift $(( OPTIND - 1 ))
+OPTIND=1
+
+# Colors.
 if [[ -t 1 ]]; then
     C_RED="\e[91m"
     C_GREEN="\e[92m"
@@ -105,27 +172,27 @@ else
     C_OFF=""
 fi
 
-# }}}
+# }}}.
 
-# {{{ Variables declarations
+# {{{ Variables declarations.
 
-# Associative array containing the projects
+# Associative array containing the projects.
 declare -A projects
 
-# List of sorted projects index of the associative array
+# List of sorted projects index of the associative array.
 declare -a projects_indexes
 
-# Array containing the ignored patterns
+# Array containing the ignored patterns.
 declare -a ignored_patterns
 
-# Array used to transmit the list of branches
+# Array used to transmit the list of branches.
 declare -a branches
 
-# }}}
+# }}}.
 
-# {{{ General functions
+# {{{ General functions.
 
-# Check if an array contains a value
+# Check if an array contains a value.
 function array_contains()
 {
     local seeking=$1; shift
@@ -141,49 +208,50 @@ function array_contains()
     return $in
 }
 
-# Remove elements from a list that match a pattern in the second list
+# Remove elements from a list that match a pattern in the second list.
 function remove_matching()
 {
     local set_a set_b a b ok
 
-    # Reconstruct array
+    # Reconstruct array.
     declare -a set_a=( "${!1}" )
     declare -a set_b=( "${!2}" )
 
-    # Filter element in a that match a pattern in b
+    # Filter element in a that match a pattern in b.
     for a in "${set_a[@]}"
     do
         ok=0
 
-        # Look for prefix
+        # Look for prefix.
         for b in "${set_b[@]}"
         do
             [[ $a =~ $b ]] && ok=1 && break
         done
 
-        # If it is still okay, print the element
+        # If it is still okay, print the element.
         [[ $ok -eq 0 ]] && echo -n "$a "
     done
 
     return 0
 }
 
-# Remove elements from a list that have as prefix another element of the same list
-# Used to remove subrepositories, e.g. the list ( foo/bar/ foo/ ). The element
-# foo/bar/ has for prefix foo/, so removing foo/bar because it is a subrepository
+# Remove elements from a list that have as prefix another element of
+# the same list.  Used to remove subrepositories, e.g. the list (
+# foo/bar/ foo/ ). The element.  foo/bar/ has for prefix foo/, so
+# removing foo/bar because it is a subrepository.
 function remove_prefixed()
 {
     local set_a a b ok
 
-    # Reconstruct array
+    # Reconstruct array.
     declare -a set_a=( "${!1}" )
 
-    # Filter element that have already a prefix present
+    # Filter element that have already a prefix present.
     for a in "${set_a[@]}"
     do
         ok=0
 
-        # Look for prefix
+        # Look for prefix.
         for b in "${set_a[@]}"
         do
             b=$(sed -e 's/[]\/()$*.^|[]/\\&/g' <<< "$b")
@@ -191,126 +259,135 @@ function remove_prefixed()
             [[ "$b" > "$a" ]] && break
         done
 
-        # If it is still okay, print the element
+        # If it is still okay, print the element.
         [[ $ok -eq 0 ]] && echo -n "$a "
     done
 
     return 0
 }
 
-# }}}
+# }}}.
 
-# {{{ Projects functions
+# {{{ Projects functions.
 
-# Is the current directory the root of workspace?
+# Is the current directory the root of workspace?.
 function is_project_root()
 {
-    # If there is a project file, this is a project root
+    # If there is a project file, this is a project root.
     (ls "$PROJECTS_FILE" 1>/dev/null 2>&1) && return 0
 
-    # If we reach root, and there is no projects file, exit with an error message
+    # If we reach root, and there is no projects file, exit with an
+    # error message.
     [[ $(pwd) = "/" ]] && echo "Not in a workspace" && exit 1
 
-    # Otherwise return failure. Must never be reached... normally
+    # Otherwise return failure. Must never be reached... normally.
     return 1
 }
 
-# Add a project to the list of projects
+# Add a project to the list of projects.
 function add_project()
 {
-    # Add the project to the list
-    projects[$1]="$2${FIELD_SEP}$3"
+    # Add the project to the list.
+    projects[$1]="$2${FIELD_SEP}$3${FIELD_SEP}$4"
 
     return 0
 }
 
-# Check if the project exists in the list of projects
+# Check if the project exists in the list of projects.
 function exists_project()
 {
     array_contains "$1" "${projects_indexes[@]}"
 }
 
-# Read the list of projects from the projects list file
+# Read the list of projects from the projects list file.
 function read_projects()
 {
-    local dir repo upstream
+    local dir repo branch upstream
 
     # Read line by line (discard comments and empty lines)
     while read line
     do
-        # Remove inline comments
+        # Remove inline comments.
         line=$(sed -e 's/#.*$//' <<< "$line")
-        
-        # Read the line fields
+
+        # Read the line fields.
         dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | tr -d '[[:space:]]')
         repo=$(cut -d${FIELD_SEP} -f2 <<< "$line" | tr -d '[[:space:]]')
-        upstream=$(cut -d${FIELD_SEP} -f3 <<< "$line" | tr -d '[[:space:]]')
+        branch=$(cut -d${FIELD_SEP} -f3 <<< "$line" | tr -d '[[:space:]]')
+        upstream=$(cut -d${FIELD_SEP} -f4 <<< "$line" | tr -d '[[:space:]]')
 
-        # Skip if the dir is empty
+        # Skip if the dir is empty.
         [ -z "$dir" ] && continue
 
-        # Otherwise add the project to the list
-        add_project "$dir" "$repo" "$upstream"
+        # Otherwise add the project to the list.
+        add_project "$dir" "$repo" "$branch" "$upstream"
     done < <(grep -v "^#\|^$" $PROJECTS_FILE)
 
-    # Extract sorted index of projects
+    # Extract sorted index of projects.
     readarray -t projects_indexes < <(for a in "${!projects[@]}"; do echo "$a"; done | sort)
 
     return 0
 }
 
-# Read the list of ignored patterns from the file
+# Read the list of ignored patterns from the file.
 function read_ignored()
 {
     [[ -e "$IGNORE_FILE" ]] || return 0
 
     local pattern
 
-    # Read line by line
+    # Read line by line.
     while read -r pattern
     do
-        # Remove inline comments
+        # Remove inline comments.
         pattern=$(sed -e 's/#.*$//' <<< "$pattern")
 
-        # Check if this is an empty pattern: continue
+        # Check if this is an empty pattern: continue.
         [[ -z $pattern ]] && continue
 
         pattern=$(sed -e 's/[/&]/\\&/g' <<< "$pattern")
 
-        # Add it to the list of ignored patterns
+        # Add it to the list of ignored patterns.
         ignored_patterns+=( "$pattern" )
     done < <(grep -v "^#\|^$" $IGNORE_FILE)
 
     return 0
 }
 
-# Get the repo url from associative array values
+# Get the repo url from associative array values.
 function get_repo_url()
 {
     cut -d${FIELD_SEP} -f1 <<< "$1"
     return 0
 }
 
-# Get the upstream url from associative array values
-function get_upstream_url()
+# Get the upstream branch from associative array values.
+function get_upstream_branch()
 {
     cut -d${FIELD_SEP} -f2 <<< "$1"
     return 0
 }
 
-# }}}
+# Get the upstream url from associative array values.
+function get_upstream_url()
+{
+    cut -d${FIELD_SEP} -f3 <<< "$1"
+    return 0
+}
 
-# {{{ Git functions
+# }}}.
 
-# Clone a repository
+# {{{ Git functions.
+
+# Clone a repository.
 function git_clone()
 {
     local cmd
 
     # Git command to execute
-    cmd=( "git" "clone" "$1" "$2" )
+    cmd=( "git" "clone" "-b" "$1" "$2" "$3" )
 
-    # Run the command and print the output in case of error
+    # Run the command and print the output in case of error.
     if ! output=$("${cmd[@]}" 2>&1); then
         echo "$output"
         return 1
@@ -319,15 +396,35 @@ function git_clone()
     return 0
 }
 
-# Fetch from the origin
+# Checkout branch a repository.
+function git_checkout()
+{
+    local cmd
+
+    # Git command to execute.
+    cmd=( "git" "checkout" "$2" )
+
+    # Run the command and print the output in case of error.
+    if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
+        return 1
+    fi
+
+    if [ -z "$output" ] ; then
+        return 1
+    fi
+
+    return 0
+}
+
+# Fetch from the origin.
 function git_fetch()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "fetch" )
 
-    # Execute the command
+    # Execute the command.
     if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
         return 1
     fi
@@ -339,15 +436,15 @@ function git_fetch()
     return 0
 }
 
-# Fetch from the origin and update ref at same time
+# Fetch from the origin and update ref at same time.
 function git_fetch_update()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "fetch" "${GIT_ORIGIN}" "$2:$2")
 
-    # Execute the command
+    # Execute the command.
     if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
         return 1
     fi
@@ -359,15 +456,15 @@ function git_fetch_update()
     return 0
 }
 
-# Fast-forward from the origin
+# Fast-forward from the origin.
 function git_fast_forward()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "pull" "--ff-only" )
 
-    # Execute the command
+    # Execute the command.
     if ! output=$(cd "$1" && "${cmd[@]}" 2>&1); then
         return 1
     fi
@@ -379,15 +476,15 @@ function git_fast_forward()
     return 0
 }
 
-# Add an upstream branch to a repository
+# Add an upstream branch to a repository.
 function git_add_upstream()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "remote" "add" "${GIT_UPSTREAM}" "$2")
 
-    # Run the command and print the output in case of error
+    # Run the command and print the output in case of error.
     if ! output=$(cd "$1" && "${cmd[@]}"); then
         echo "$output"
         return 1
@@ -396,35 +493,49 @@ function git_add_upstream()
     return 0
 }
 
-# Get a remote url
+# Get a remote url.
 function git_remote()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "remote" "-v" )
 
-    # Run the command and print the output
-    (cd "$1" && "${cmd[@]}" | grep "$2" | head -n 1 | cut -d' ' -f1 | cut -d'	' -f 2 | tr -d ' ')
+    # Run the command and print the output.
+    (cd "$1" && "${cmd[@]}" | grep "$2" | head -n 1 | cut -d' ' -f1 | cut -d'   ' -f 2 | tr -d ' ')
 
     return 0
 }
 
-# Get the current branch name
-function git_branch()
+# Get the current branch name.
+function git_origin()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "branch" )
 
-    # Run the command and print the output
+    # Run the command and print the output.
     (cd "$1" && "${cmd[@]}" | grep "*" | cut -d'*' -f 2 | tr -d ' ')
 
     return 0
 }
 
-# Get all the branch names, result is passed by global variable
+# Get the current branch name.
+function git_branch()
+{
+    local cmd
+
+    # Git command to execute.
+    cmd=( "git" "branch" )
+
+    # Run the command and print the output.
+    (cd "$1" && "${cmd[@]}" | grep "*" | cut -d'*' -f 2 | tr -d ' ')
+
+    return 0
+}
+
+# Get all the branch names, result is passed by global variable.
 function git_branches()
 {
     local cmd output
@@ -441,155 +552,168 @@ function git_branches()
     return 0
 }
 
-# Check for changes not commited
+# Check for changes not commited.
 function git_check_uncached_uncommited()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "diff" "--exit-code" )
 
-    # Run the command, and if it succeed, return success
+    # Run the command, and if it succeed, return success.
     (cd "$1" && "${cmd[@]}" 1>/dev/null 2>&1) && return 0
 
-    # Otherwise return failure
+    # Otherwise return failure.
     return 1
 }
 
-# Check for changes not commited but cached
+# Check for changes not commited but cached.
 function git_check_cached_uncommited()
 {
     local cmd
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "diff" "--cached" "--exit-code" )
 
     # Run the command, and if it succeed, return success
     (cd "$1" && "${cmd[@]}" 1>/dev/null 2>&1) && return 0
 
-    # Otherwise return failure
+    # Otherwise return failure.
     return 1
 }
 
-# Check for changes not commited but cached
+# Check for changes not commited but cached.
 function git_check_untracked()
 {
     local cmd nb
 
-    # Git command to execute
+    # Git command to execute.
     cmd=( "git" "status" "--porcelain" )
 
-    # Run the command
+    # Run the command.
     nb=$(cd "$1" && "${cmd[@]}" 2>/dev/null | grep -c "^??")
 
-    # If no untracked files return success
+    # If no untracked files return success.
     [[ $nb -eq 0 ]] && return 0
 
-    # Otherwise return failure
+    # Otherwise return failure.
     return 1
 }
 
-# Check for changes not commited
+# Check for changes not committed.
 function git_check_branch_origin()
 {
     local local_cmd remote_cmd local_hash remote_hash
 
-    # Git commands to execute
+    # Git commands to execute.
     local_cmd=( "git" "rev-parse" "--verify" "$2" )
     remote_cmd=( "git" "rev-parse" "--verify" "${GIT_ORIGIN}/$2" )
 
-    # Execute the command to get the local hash, If it fails this is weird,
-    # so... exiting
+    # Execute the command to get the local hash, If it fails this is
+    # weird, so... exiting.
     local_hash=$(cd "$1"; "${local_cmd[@]}" 2>/dev/null) || return 3
 
-    # Execute the command to get the remote hash. If it fails, that mean there
-    # is no remote branch, return special code
+    # Execute the command to get the remote hash. If it fails, that
+    # mean there is no remote branch, return special code.
     remote_hash=$(cd "$1"; "${remote_cmd[@]}" 2>/dev/null) || return 2
 
-    # If the hashes are equal, return success
+    # If the hashes are equal, return success.
     [ "$local_hash" == "$remote_hash" ] && return 0
 
-    # Otherwise return failure
+    # Otherwise return failure.
     return 1
 }
 
-# }}}
+# }}}.
 
-# {{{ Command functions
+# {{{ Command functions.
 
-# Init command
+# Init command.
 function cmd_init()
 {
-    # Go back to start directory
+    # Go back to start directory.
     cd "$START_PWD"
 
-    # Check if already a workspace
+    # Check if already a workspace.
     [[ -f ${PROJECTS_FILE} ]] && echo -e "${C_RED}Already a workspace.${C_OFF}" && return 1
 
     local found
     declare -a found
 
-    # Prepare the list of all existing projects, sorted
+    # Prepare the list of all existing projects, sorted.
     found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e "s#/${GIT_FOLDER}\$##" | cut -c 3- | sort) )
     found=( $(remove_prefixed found[@]) )
 
-    # Create the list of repositories
+    # Create the list of repositories.
     output=$(for dir in "${found[@]}"
-    do
-        echo "$dir | $(git_remote $dir "${GIT_ORIGIN}") | $(git_remote $dir "${GIT_UPSTREAM}")"
-    done)
+             do
+                 echo "$dir | $(git_remote $dir "${GIT_ORIGIN}") | $(git_branch $dir "${GIT_BRANCH}") | $(git_remote $dir "${GIT_UPSTREAM}")"
+             done)
 
-    # Write the file if it is not empty
+    # Write the file if it is not empty.
     [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_GREEN}Workspace file «${PROJECTS_FILE}» created.${C_OFF}" && return 0
 
-    # Display informations messages
+    # Display informations messages.
     echo -e "${C_YELLOW}No repository found.${C_OFF}"
     return 1
 }
 
-# Update command
+# Update command.
 function cmd_update()
 {
     local dir repo upstream
 
-    # For all projects
+    # For all projects.
     for dir in "${projects_indexes[@]}"
     do
-        # Get informations about the current project
+        # Get informations about the current project.
         repo=$(get_repo_url "${projects[$dir]}")
         upstream=$(get_upstream_url "${projects[$dir]}")
+        branch=$(get_upstream_branch "${projects[$dir]}")
 
-        # Print the repository
-        echo -e "${C_BLUE}$dir${C_OFF}:"
+        # Print the repository.
+        echo -e "${C_BLUE}$dir${C_OFF}: $branch"
 
-        # Check if repository already exists, and continue if it is the case
+        # Check if repository already exists, and continue if it is
+        # the case.
         if [ -d "$dir" ]; then
-            # Print the information
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+            local org_branch=$(git_branch $dir "${GIT_BRANCH}")
+            if [ "$org_branch" == "$branch" ]; then
+                # Print the information.
+                printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+            else
+                # Clone the repository.
+                if ! git_checkout "$dir" "$branch"; then
+                    printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
+                    return 1
+                else
+                    printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Switch branch from $org_branch to $branch"
+                fi
+            fi
         elif [[ -z $repo ]]; then
-            # Print the information
+            # Print the information.
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF} " " " "No URL defined"
         fi
 
-        # Print information for local only repositories
+        # Print information for local only repositories.
         [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}" && continue
 
-        # Finish the newline
+        # Finish the newline.
         printf "\n"
 
-        # Next repository if already existing
+        # Next repository if already existing.
         [[ -d "$dir" ]] && continue
 
-        # Print the information
+        # Print the information.
         printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
 
-        # Clone the repository
-        if ! git_clone "$repo" "$dir"; then
+        # Clone the repository.
+        if ! git_clone "$branch" "$repo" "$dir"; then
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
             return 1
         fi
 
-        # If an upstream url is set, add it
+        # If an upstream url is set, add it.
         [[ ! -z "$upstream" ]] && git_add_upstream "$dir" "$upstream"
 
         printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
@@ -598,23 +722,24 @@ function cmd_update()
     return 0
 }
 
-# Status command
+# Status command.
 function cmd_status()
 {
     local dir repo upstream branch branch_done rc uptodate printed
 
     uptodate=1
 
-    # For all projects
+    # For all projects.
     for dir in "${projects_indexes[@]}"
     do
-        # Get informations about the current project
+        # Get information about the current project.
         repo=$(get_repo_url "${projects[$dir]}")
 
-        # Print the project name
+        # Print the project name.
         echo -e "${C_BLUE}$dir${C_OFF}:"
 
-        # Check if repository already exists, and continue if it is not the case
+        # Check if repository already exists, and continue if it is
+        # not the case.
         if [ ! -d "$dir" ]; then
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
             [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}\n" || printf "\n"
@@ -622,10 +747,10 @@ function cmd_status()
             continue
         fi
 
-        # Get the current branch name
+        # Get the current branch name.
         current=$(git_branch "$dir")
 
-        # Cut branch name
+        # Cut branch name.
         if [ ${#current} -gt $((MBL - 3)) ]; then
             display_current="${current:0:$((MBL - 3))}… :"
         else
@@ -633,52 +758,53 @@ function cmd_status()
         fi
         branch_done=0
 
-        # If there is no "origin" URL defined, don't print branch information (useless)
+        # If there is no "origin" URL defined, don't print branch
+        # information (useless).
         [[ -z $repo ]] && display_current=" "
 
-        # Nothing is printed yet
+        # Nothing is printed yet.
         printed=0
 
-        # Check for not commited not cached changes
+        # Check for not commited not cached changes.
         if ! git_check_uncached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Uncached changes)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
-        # Check for not commited changes
+            # Check for not commited changes.
         elif ! git_check_cached_uncommited "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Uncommitted changes)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
-        # Check for untracked files
+            # Check for untracked files.
         elif ! git_check_untracked "$dir"; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Untracked files)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
-        # If the "origin" URL is not defined in the project list, then no need
-        # to check for synchronization, it is clean if there is no untracked,
-        # uncached or uncommited changes.
+            # If the "origin" URL is not defined in the project list, then
+            # no need to check for synchronization, it is clean if there
+            # is no untracked, uncached or uncommited changes.
         elif [[ -z $repo ]]; then
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_GREEN}Clean${C_OFF} "
             printed=1
         fi
 
-        # Add special information for local only repositories
+        # Add special information for local only repositories.
         if [[ -z $repo ]]; then
             echo -e "${C_BLUE}[Local only repository]${C_OFF}"
             continue
         fi
 
-        # If something was printed, finish the line
+        # If something was printed, finish the line.
         [[ $printed -eq 1 ]] && printf "\n"
 
-        # List branches of current repository
+        # List branches of current repository.
         git_branches "$dir"
 
         # If no branches
@@ -687,65 +813,65 @@ function cmd_status()
         # Fetch origin
         [[ $1 -eq $S_FETCH ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
 
-        # Check for difference with origin
+        # Check for difference with origin.
         for branch in "${branches[@]}"
         do
-            # Text to display after branch
+            # Text to display after branch.
             after="\n"
 
-            # Cut branch name
+            # Cut branch name.
             if [ ${#branch} -gt $((MBL - 3)) ]; then
                 display_branch="${branch:0:$((MBL - 3))}…"
             else
                 display_branch="$branch"
             fi
 
-            # If the branch is already done, skip it
+            # If the branch is already done, skip it.
             [[ $branch_done -eq 1 ]] && [ "$branch" = "$current" ] && continue
 
-            # Fast forward from origin
+            # Fast forward from origin.
             if [[ $1 -eq $S_FAST_FORWARD ]]; then
-                # Pull fast forward for current branch
+                # Pull fast forward for current branch.
                 if [ "$branch" = "$current" ]; then
                     git_fast_forward "$dir" && after=" ${C_CYAN}(fast-forwarded)${C_OFF}${after}"
-                # Fetch update for others
+                    # Fetch update for others.
                 else
                     git_fetch_update "$dir" "$branch" && after=" ${C_CYAN}(fast-forwarded)${C_OFF}${after}"
                 fi
             fi
 
-            # Check for not consistant branches
+            # Check for not consistant branches.
             git_check_branch_origin "$dir" "$branch";
 
-            # Get the return of the function
+            # Get the return of the function.
             rc=$?
 
-            # If the hashes are different
+            # If the hashes are different.
             if [[ "$rc" -eq 1 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_RED}Not in sync with ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
 
-            # If the remote doesn't exist
+                # If the remote doesn't exist.
             elif [[ "$rc" -eq 2 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_YELLOW}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
 
-            # If there is no local hash (must never happen... but who knows?)
+                # If there is no local hash (must never happen... but who knows?).
             elif [[ "$rc" -eq 3 ]]; then
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_RED}Internal error${C_OFF}"
                 uptodate=0
 
-            # Otherwise
+                # Otherwise.
             else
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_GREEN}Clean${C_OFF}"
 
             fi
 
-            # Print after informations
+            # Print after information.
             echo -en "${after}"
         done
     done
@@ -757,7 +883,7 @@ function cmd_status()
     return 0
 }
 
-# Verify command
+# Verify command.
 function cmd_check()
 {
     local found all repo dir
@@ -767,37 +893,37 @@ function cmd_check()
     declare -a found
     declare -a all
 
-    # Create the list of all projects, including ignored ones
+    # Create the list of all projects, including ignored ones.
     readarray -t projects_all_indexes < <(for a in "${!projects[@]}"; do echo "$a"; done | sort)
 
-    # Create the list of ignored projects only
+    # Create the list of ignored projects only.
     readarray -t projects_ignored < <(comm -23 <(for a in "${projects_all_indexes[@]}"; do echo "$a"; done | sort) <(for a in "${projects_indexes[@]}"; do echo "$a"; done | sort))
 
-    # Prepare list of all projects, existing or missing, sorted with no
+    # Prepare list of all projects, existing or missing, sorted with no.
     found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e "s#/${GIT_FOLDER}\$##" | cut -c 3- | sort) )
     found=( $(remove_prefixed found[@]) )
     all=( "${found[@]}" "${projects_all_indexes[@]}" )
     readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort -u)
 
-    # For each repositories
+    # For each repositories.
     for dir in "${all[@]}"
     do
-        # Print the repository
+        # Print the repository.
         echo -e "${C_BLUE}$dir${C_OFF}:"
 
-        # Check if the directory is ignored
+        # Check if the directory is ignored.
         if array_contains "$dir" "${projects_ignored[@]}"; then
             printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Ignored"
             continue
         fi
 
-        # Check if the directory exists
+        # Check if the directory exists.
         if [ ! -d "$dir" ]; then
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Missing"
             continue
         fi
 
-        # Check if it is listed as project and print according message
+        # Check if it is listed as project and print according message.
         if exists_project $dir; then
             printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Known"
         else
@@ -808,44 +934,43 @@ function cmd_check()
     return 0
 }
 
-# Display the usage of this program
-function usage()
-{
-    echo -e "gws is an helper to manage workspaces which contain git repositories."
-    echo -e ""
-    echo -e "Usage: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF}"
-    echo -e ""
-    echo -e "where <command> is:"
-    echo -e "    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
-    echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
-    echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
-    echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
-    echo -e "    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
-    echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
-    exit 1
-}
+# }}}.
 
-# }}}
-
-# Except for the special case of "init" in which there is no project files
+# Except for the special case of "init" in which there is no project files.
 if [[ "$1" != "init" ]]; then
-    # First move to the first parent directory containing a projects file
+    # First move to the first parent directory containing a projects.
+    # file.
     while ! is_project_root
     do
         cd ..
     done
 
-    # Then read the list of projects and ignore list
+    # Then read the list of projects and ignore list.
     read_projects
     read_ignored
 fi
 
+## Pulls all changes from the upstream repos.
+## $1: Top repository directory.
+function pull_from_repos() {
+    local repo_dir=$1 i
+    [ -d "$repo_dir" ] || (echo "No such directory: $repo_dir." && exit 7)
+    ## CD to the repository directory.
+    cd "$repo_dir"
+    ## Loop over all repo directories and pull.
+    for i in $(ls -d */); do
+        cd "$i"
+        echo "Pulling in: $i"
+        git pull
+        cd "$repo_dir"
+    done
+}
 
-# Remove ignored projects
+# Remove ignored projects.
 projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
 
-# Finally select the desired command
-case $1 in
+# Finally select the desired command.
+case $GIT_COMMAND2RUN in
     "init")
         cmd_init
         ;;
@@ -864,10 +989,16 @@ case $1 in
     "check")
         cmd_check
         ;;
+    "pull")
+        pull_from_repos $REPO_DIR
+        ;;
     "--version"|"-v")
         echo -e "gws version ${C_RED}$VERSION${C_OFF}"
         ;;
-    *) usage ;;
+    *)
+        print_usage
+        exit 5
+        ;;
 esac
 
-# vim: fdm=marker
+# vim: fdm=marker.
