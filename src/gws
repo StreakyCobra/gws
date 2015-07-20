@@ -5,7 +5,7 @@
 # OS:           Probably all linux distributions                               #
 # Requirements: git, bash > 4.0                                                #
 # License:      MIT (See below)                                                #
-# Version:      0.1.7                                                          #
+# Version:      0.1.8                                                          #
 #                                                                              #
 # 'gws' is the abbreviation of 'Git WorkSpace'.                                #
 # This is an helper to manage workspaces which contain git repositories.       #
@@ -50,7 +50,7 @@ set -o pipefail
 # {{{ Parameters
 
 # Version number
-VERSION="0.1.7"
+VERSION="0.1.8"
 
 # Starting directory
 START_PWD="$(pwd)"
@@ -61,8 +61,17 @@ PROJECTS_FILE=".projects.gws"
 # Name of the file containing the ignored patterns
 IGNORE_FILE=".ignore.gws"
 
+# Name of the file containing the cache
+CACHE_FILE=".cache.gws"
+
 # Field separator in the projects list
 FIELD_SEP='|'
+
+# Array lines separator
+ARRAY_LINE_SEP=', '
+
+# Separator between the URL and its name in config file
+URL_NAME_SEP=' '
 
 # Git name of the origin branch of repositories
 GIT_ORIGIN="origin"
@@ -198,6 +207,32 @@ function remove_prefixed()
     return 0
 }
 
+# Keep projects that are prefixed by the given directory
+function keep_prefixed_projects()
+{
+    local limit_to dir current
+
+    # First check if the folder exists
+    [[ ! -d "${START_PWD}/$1" ]] && return 1
+
+    # Get the full path to limit to in regexp form
+    limit_to=$(cd "${START_PWD}/$1" && pwd )/
+    limit_to=$(sed -e 's/[]\/()$*.^|[]/\\&/g' <<< "$limit_to")
+
+    # Iterate over each project
+    for dir in "${projects_indexes[@]}"
+    do
+        # Get its full path
+        current="${PWD}/${dir}/"
+
+        # If it match, add it to the output
+        [[ $current =~ ^$limit_to ]] && echo -n "$dir "
+    done
+
+    # Everything is right
+    return 0
+}
+
 # }}}
 
 # {{{ Projects functions
@@ -219,7 +254,7 @@ function is_project_root()
 function add_project()
 {
     # Add the project to the list
-    projects[$1]="$2${FIELD_SEP}$3"
+    projects[$1]="$2"
 
     return 0
 }
@@ -233,28 +268,76 @@ function exists_project()
 # Read the list of projects from the projects list file
 function read_projects()
 {
-    local dir repo upstream
+    # Store cache state
+    CACHED_PROJECTS_HASH=$(md5sum "${PROJECTS_FILE}" 2>/dev/null || echo NONE)
+    sed -i '/^declare -- CACHED_PROJECTS_HASH=/d' "${CACHE_FILE}"
+    declare -p CACHED_PROJECTS_HASH >> "${CACHE_FILE}"
+
+    # Clear previous cache state
+    sed -i '/^declare -A projects=/d' "${CACHE_FILE}"
+    sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+    projects=()
+    projects_indexes=()
+
+    local line dir remotes count repo remotes_list
 
     # Read line by line (discard comments and empty lines)
     while read line
     do
         # Remove inline comments
         line=$(sed -e 's/#.*$//' <<< "$line")
-        
-        # Read the line fields
-        dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | tr -d '[[:space:]]')
-        repo=$(cut -d${FIELD_SEP} -f2 <<< "$line" | tr -d '[[:space:]]')
-        upstream=$(cut -d${FIELD_SEP} -f3 <<< "$line" | tr -d '[[:space:]]')
+
+        # We get the directory
+        dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        # We get the rest of the configuration line containing remotes
+        remotes=$(cut -d${FIELD_SEP} -f1 --complement <<< "$line")
+
+        # We get all the remotes
+        count=0
+        remotes_list=""
+        while [ -n "$remotes" ];
+        do
+            count=$((count + 1))
+            # We get the first defined remote in the "remotes" variable
+            remote=$(cut -d${FIELD_SEP} -f1 <<< "$remotes" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/[[:space:]]\+/ /g')
+            # We remove the current remote from the line for next iteration
+            remotes=$(cut -d${FIELD_SEP} -f1 -s --complement <<< "$remotes")
+            # We get its url
+            remote_url=$(cut -d"${URL_NAME_SEP}" -f1 <<< "$remote" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            # We get its name if any
+            remote_name=$(cut -d"${URL_NAME_SEP}" -f2 -s <<< "$remote")
+
+            # If name its not set we correct it
+            if [[ -z "$remote_name" ]]; then
+                if [[ $count == 1 ]]; then
+                    remote_name=$GIT_ORIGIN
+                elif [[ $count == 2 ]]; then
+                    remote_name=$GIT_UPSTREAM
+                else
+                    error_msg="${C_RED}The URL at position $count for \"$dir\" is missing a name.${C_OFF}"
+                    echo -e "$error_msg"
+                    exit 1
+                fi
+            fi
+
+            remotes_list+="${remote_name}${FIELD_SEP}${remote_url}${ARRAY_LINE_SEP}"
+        done
 
         # Skip if the dir is empty
-        [ -z "$dir" ] && continue
+        [ -z "${dir}" ] && continue
 
         # Otherwise add the project to the list
-        add_project "$dir" "$repo" "$upstream"
+        add_project "${dir}" "${remotes_list}"
     done < <(grep -v "^#\|^$" $PROJECTS_FILE)
 
     # Extract sorted index of projects
     readarray -t projects_indexes < <(for a in "${!projects[@]}"; do echo "$a"; done | sort)
+
+    # Cache the result
+    if [[ ! ${#projects[@]} -eq 0 ]]; then
+        declare -p projects >> "${CACHE_FILE}"
+        declare -p projects_indexes >> "${CACHE_FILE}"
+    fi
 
     return 0
 }
@@ -262,6 +345,15 @@ function read_projects()
 # Read the list of ignored patterns from the file
 function read_ignored()
 {
+    # Store cache state
+    CACHED_IGNORE_HASH=$(md5sum "${IGNORE_FILE}" 2>/dev/null || echo NONE)
+    sed -i '/^declare -- CACHED_IGNORE_HASH=/d' "${CACHE_FILE}"
+    declare -p CACHED_IGNORE_HASH >> "${CACHE_FILE}"
+
+    # Remove previous version in cache
+    sed -i '/^declare -a ignored_patterns=/d' "${CACHE_FILE}"
+    ignored_patterns=()
+
     [[ -e "$IGNORE_FILE" ]] || return 0
 
     local pattern
@@ -281,20 +373,36 @@ function read_ignored()
         ignored_patterns+=( "$pattern" )
     done < <(grep -v "^#\|^$" $IGNORE_FILE)
 
+    # Cache the results
+    if [[ ! ${#ignored_patterns[@]} -eq 0 ]]; then
+        declare -p ignored_patterns >> "${CACHE_FILE}"
+    fi
+
     return 0
 }
 
 # Get the repo url from associative array values
 function get_repo_url()
 {
-    cut -d${FIELD_SEP} -f1 <<< "$1"
-    return 0
-}
+    local remote remote_name remote_url
+    declare -A assoc
 
-# Get the upstream url from associative array values
-function get_upstream_url()
-{
-    cut -d${FIELD_SEP} -f2 <<< "$1"
+    # Read the projects info
+    IFS=${ARRAY_LINE_SEP} read -a array <<< "$1"
+
+    # Check if origin is present
+    for remote in "${array[@]}";
+    do
+        remote_name=$(cut -d${FIELD_SEP} -f1 <<< ${remote})
+        remote_url=$(cut -d${FIELD_SEP} -f2 <<< ${remote})
+        assoc["${remote_name}"]="${remote_url}"
+    done
+
+    [ "${assoc[${GIT_ORIGIN}]+isset}" ] || return 1
+
+    # Return the URL
+    cut -d${FIELD_SEP} -f2 <<< ${array[${GIT_ORIGIN}]}
+
     return 0
 }
 
@@ -380,12 +488,12 @@ function git_fast_forward()
 }
 
 # Add an upstream branch to a repository
-function git_add_upstream()
+function git_add_remote()
 {
     local cmd
 
     # Git command to execute
-    cmd=( "git" "remote" "add" "${GIT_UPSTREAM}" "$2")
+    cmd=( "git" "remote" "add" "$2" "$3")
 
     # Run the command and print the output in case of error
     if ! output=$(cd "$1" && "${cmd[@]}"); then
@@ -397,7 +505,7 @@ function git_add_upstream()
 }
 
 # Get a remote url
-function git_remote()
+function git_remote_url()
 {
     local cmd
 
@@ -408,6 +516,34 @@ function git_remote()
     (cd "$1" && "${cmd[@]}" | grep "$2" | head -n 1 | cut -d' ' -f1 | cut -d'	' -f 2 | tr -d ' ')
 
     return 0
+}
+
+# Get the list of remotes
+function git_remotes()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "remote" )
+
+    # Run the command and print the output
+    (cd "$1" && "${cmd[@]}")
+
+    return 0
+}
+
+# Check if a given remote name exists
+function git_remote_exists()
+{
+    local cmd
+
+    # Git command to execute
+    cmd=( "git" "remote" )
+
+    # Run the command
+    (cd "$1" && "${cmd[@]}" | grep "^$2\$") > /dev/null 2>&1
+
+    return $?
 }
 
 # Get the current branch name
@@ -526,7 +662,7 @@ function cmd_init()
     # Check if already a workspace
     [[ -f ${PROJECTS_FILE} ]] && echo -e "${C_RED}Already a workspace.${C_OFF}" && return 1
 
-    local found
+    local found remote
     declare -a found
 
     # Prepare the list of all existing projects, sorted
@@ -536,7 +672,12 @@ function cmd_init()
     # Create the list of repositories
     output=$(for dir in "${found[@]}"
     do
-        echo "$dir | $(git_remote $dir "${GIT_ORIGIN}") | $(git_remote $dir "${GIT_UPSTREAM}")"
+        echo -n "$dir | $(git_remote_url "$dir" "${GIT_ORIGIN}")"
+        for remote in $(git_remotes "$dir");
+        do
+            [[ "$remote" != "${GIT_ORIGIN}" ]] && echo -n " | $(git_remote_url $dir $remote) $remote"
+        done
+        echo
     done)
 
     # Write the file if it is not empty
@@ -550,14 +691,13 @@ function cmd_init()
 # Update command
 function cmd_update()
 {
-    local dir repo upstream
+    local dir repo remote remote_name remote_url
 
     # For all projects
     for dir in "${projects_indexes[@]}"
     do
         # Get informations about the current project
         repo=$(get_repo_url "${projects[$dir]}")
-        upstream=$(get_upstream_url "${projects[$dir]}")
 
         # Print the repository
         echo -e "${C_BLUE}$dir${C_OFF}:"
@@ -578,21 +718,30 @@ function cmd_update()
         printf "\n"
 
         # Next repository if already existing
-        [[ -d "$dir" ]] && continue
+        if [[ ! -d "$dir" ]]; then
 
-        # Print the information
-        printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
+            # Print the information
+            printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
 
-        # Clone the repository
-        if ! git_clone "$repo" "$dir"; then
-            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
-            return 1
+            # Clone the repository
+            if ! git_clone "$repo" "$dir"; then
+                printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
+                return 1
+            fi
+
+            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
         fi
 
-        # If an upstream url is set, add it
-        [[ ! -z "$upstream" ]] && git_add_upstream "$dir" "$upstream"
-
-        printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
+        # Verify all remotes, create if not existing
+        IFS=${ARRAY_LINE_SEP} read -a array <<< "${projects[$dir]}"
+        for remote in "${array[@]}"
+        do
+            remote_name=$(cut -d${FIELD_SEP} -f1 <<< ${remote})
+            remote_url=$(cut -d${FIELD_SEP} -f2 <<< ${remote})
+            if ! git_remote_exists "${dir}" "${remote_name}"; then
+                git_add_remote "${dir}" "${remote_name}" "${remote_url}"
+            fi
+        done
     done
 
     return 0
@@ -601,7 +750,7 @@ function cmd_update()
 # Status command
 function cmd_status()
 {
-    local dir repo upstream branch branch_done rc uptodate printed
+    local dir repo branch branch_done rc uptodate printed
 
     uptodate=1
 
@@ -617,7 +766,8 @@ function cmd_status()
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
-            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}\n" || printf "\n"
+            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}"
+            printf "\n"
             uptodate=0
             continue
         fi
@@ -798,7 +948,7 @@ function cmd_check()
         fi
 
         # Check if it is listed as project and print according message
-        if exists_project $dir; then
+        if exists_project "$dir"; then
             printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Known"
         else
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Unknown"
@@ -813,15 +963,22 @@ function usage()
 {
     echo -e "gws is an helper to manage workspaces which contain git repositories."
     echo -e ""
-    echo -e "Usage: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF}"
+    echo -e "Usages: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF} [${C_GREEN}<directory>${C_OFF}]"
+    echo -e "        ${C_RED}$(basename "$0")${C_OFF} [${C_GREEN}<directory>${C_OFF}]"
     echo -e ""
-    echo -e "where <command> is:"
+    echo -e "where ${C_BLUE}<command>${C_OFF} is:"
     echo -e "    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
     echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
     echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
     echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
     echo -e "    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
     echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
+    echo -e ""
+    echo -e "If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed."
+    echo -e ""
+    echo -e "where ${C_GREEN}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder"
+    echo -e "of the workspace."
+    echo -e ""
     exit 1
 }
 
@@ -835,14 +992,29 @@ if [[ "$1" != "init" ]]; then
         cd ..
     done
 
-    # Then read the list of projects and ignore list
-    read_projects
-    read_ignored
+    # Read the cache if existing, create it if not existing.
+    touch "${CACHE_FILE}"
+    [[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}"
+
+    if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE} 2>/dev/null || echo NONE)" ]] ||
+       [[ "$CACHED_IGNORE_HASH" != "$(md5sum ${IGNORE_FILE} 2>/dev/null || echo NONE)" ]]; then
+        read_projects
+        read_ignored
+
+        projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
+        sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+        declare -p projects_indexes >> "${CACHE_FILE}"
+    fi
+
+    # If a path is specified as second argument, limit projects to the ones matching
+    # the path
+    if [[ -n "$2" ]]; then
+        error_msg="${C_RED}The directory '$2' is not found.${C_OFF}"
+        projects_list=$(keep_prefixed_projects "$2") || (echo -e "$error_msg" && exit 1) || exit 1
+        projects_indexes=( ${projects_list} )
+    fi
 fi
 
-
-# Remove ignored projects
-projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
 
 # Finally select the desired command
 case $1 in
@@ -852,7 +1024,7 @@ case $1 in
     "update")
         cmd_update
         ;;
-    ""|"status")
+    "status")
         cmd_status $S_NONE
         ;;
     "fetch")
@@ -867,7 +1039,17 @@ case $1 in
     "--version"|"-v")
         echo -e "gws version ${C_RED}$VERSION${C_OFF}"
         ;;
-    *) usage ;;
+    "--help"|"-h")
+        usage
+        ;;
+    *)
+        if [[ -n "$1" ]]; then
+            error_msg="${C_RED}The directory '$1' is not found and is not a recognized command.${C_OFF}"
+            projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
+            projects_indexes=( ${projects_list} )
+        fi
+        cmd_status $S_NONE
+        ;;
 esac
 
 # vim: fdm=marker

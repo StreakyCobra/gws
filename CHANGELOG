@@ -1,3 +1,10 @@
+0.1.8
+=====
+
+* A second argument can be given to limit the command to a specific
+  subfolder of the workspace
+* Parsing of the config files is cached to speedup the execution
+
 0.1.6
 =====
 

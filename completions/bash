@@ -3,7 +3,15 @@
 _gws()
 {
     local cur="${COMP_WORDS[COMP_CWORD]}"
-    COMPREPLY=( $(compgen -W "init update status fetch ff check" -- $cur) )
+
+    case $COMP_CWORD in
+        1) COMPREPLY=( $(compgen -S " " -W "init update status fetch ff check" -- $cur) $(compgen -S "/" -A directory -- "$cur") )
+           ;;
+        2) COMPREPLY=( $(compgen -S "/" -A directory -- "$cur") )
+           ;;
+    esac
+
+    compopt -o nospace;
 }
 
 complete -F _gws gws

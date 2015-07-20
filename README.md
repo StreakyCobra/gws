@@ -35,18 +35,17 @@ Installation
   * You can put it directly in `/bin` as root user, but it is complicated to
     keep it up-to-date.
 
-  * Otherwise, it is also possible to put it in your home folder, for example
-    in `~/.local/bin`. But you have to be sure that this folder is in your
-    `$PATH`. (I should also suggest you to have a look at
-    [peru](https://github.com/buildinspace/peru) which permits to keep files
-    from different sources up to date with one command).
-
-  * For `bash` you can include any directory on your `$PATH` by
-    including `export PATH="$PATH:/path/to/scripts/dir"` in your
-    `~/.bashrc` file.
+  * It is also possible to put it in your home folder, for example in
+    `~/.local/bin`. You have to be sure that this folder is in your `$PATH`. For
+    `bash` you can include any directory on your `$PATH` by including `export
+    PATH="$PATH:/path/to/scripts/dir"` in your `~/.bashrc` file.
 
   * On Mac OS X, it may be necessary to upgrade bash to have a version `> 4.0`.
     It could be done with: `brew install bash`.
+
+On a side note, I could also suggest you to have a look at
+[peru](https://github.com/buildinspace/peru) which permits to keep files from
+different sources up to date with one command.
 
 QuickStart
 ----------
@@ -209,27 +208,27 @@ Syntaxes
 
 One project per line. Must be of the form:
 
-    any/folder/name | url
-
-or
-
-    any/folder/name | url | upstream_url
+    <any/folder/path> | <remote_url1> <remote_name1> [ | <remote_url2> <remote_name2> [ |  ... ]]
 
 knowing that:
+
+* The `<remote_name1>` can be skipped and `origin` will be used instead
+
+* The `<remote_name2>` can be skipped and `upstream` will be used instead
+
+* There must be at least one `<remote_name>` mapping to `origin`
 
 * There can also be blank lines, comments or inline comments. Comments start
   with `#` until the end of the line.
 
-* The *name* can be any valid linux folder name not containing `|` or `#`.
+* The *folder paths* can be any valid linux folder path not containing `|`, `#`
+  or spaces.
 
-* The *urls* are passed to git as-is, so can be anything accepted by git, but
-  must not contain `|` or `#`. For instance if you have SSH aliases in your
-  config they are accepted.
+* The *remote names* can be any string not containing `|`, `#` or spaces.
 
-* The *url* will be used for cloning the repository, thus mapped to the
-  `origin` remote.
-
-* The *upstream_url* will be mapped to the `upstream` remote in git.
+* The *remote urls* are passed to git as-is, so can be anything accepted by git,
+  but must not contain `|`, `#` or spaces. For instance if you have SSH aliases
+  in your config they are accepted.
 
 ### .ignore.gws
 
