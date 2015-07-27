@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
 
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
     <title>gws by StreakyCobra</title>
@@ -52,9 +52,13 @@ repositories.</p>
 <h2>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
+<p><strong>Requirements:</strong> <code>git</code>, <code>bash &gt; 4.0</code></p>
+
 <ul>
 <li><p><strong>Arch Linux</strong>: Install the <a href="https://aur.archlinux.org/packages/gws/">gws</a>
 package from AUR</p></li>
+<li><p><strong>openSUSE</strong>: Install the <a href="https://software.opensuse.org/package/gws/">gws</a>
+package from the devel:tools repository</p></li>
 <li>
 <p><strong>Other Linux/Mac</strong>: You simply need to have the <code>src/gws</code> bash script
 somewhere inside your <code>$PATH</code>:</p>
@@ -63,17 +67,19 @@ somewhere inside your <code>$PATH</code>:</p>
 <li><p>If someone made a package for your distribution you are lucky.</p></li>
 <li><p>You can put it directly in <code>/bin</code> as root user, but it is complicated to
 keep it up-to-date.</p></li>
-<li><p>Otherwise, it is also possible to put it in your home folder, for example
-in <code>~/.local/bin</code>. But you have to be sure that this folder is in your
-<code>$PATH</code>. (I should also suggest you to have a look at
-<a href="https://github.com/buildinspace/peru">peru</a> which permits to keep files
-from different sources up to date with one command).</p></li>
-<li><p>For <code>bash</code> you can include any directory on your <code>$PATH</code> by
-including <code>export PATH="$PATH:/path/to/scripts/dir"</code> in your
-<code>~/.bashrc</code> file.</p></li>
+<li><p>It is also possible to put it in your home folder, for example in
+<code>~/.local/bin</code>. You have to be sure that this folder is in your <code>$PATH</code>. For
+<code>bash</code> you can include any directory on your <code>$PATH</code> by including <code>export
+PATH="$PATH:/path/to/scripts/dir"</code> in your <code>~/.bashrc</code> file.</p></li>
+<li><p>On Mac OS X, it may be necessary to upgrade bash to have a version <code>&gt; 4.0</code>.
+It could be done with: <code>brew install bash</code>.</p></li>
 </ul>
 </li>
 </ul>
+
+<p>On a side note, I could also suggest you to have a look at
+<a href="https://github.com/buildinspace/peru">peru</a> which permits to keep files from
+different sources up to date with one command.</p>
 
 <h2>
 <a id="quickstart" class="anchor" href="#quickstart" aria-hidden="true"><span class="octicon octicon-link"></span></a>QuickStart</h2>
@@ -269,26 +275,23 @@ Mainly used from time to time to check consistence of the workspace:</p>
 
 <p>One project per line. Must be of the form:</p>
 
-<pre><code>any/folder/name | url
-</code></pre>
-
-<p>or</p>
-
-<pre><code>any/folder/name | url | upstream_url
+<pre><code>&lt;any/folder/path&gt; | &lt;remote_url1&gt; &lt;remote_name1&gt; [ | &lt;remote_url2&gt; &lt;remote_name2&gt; [ |  ... ]]
 </code></pre>
 
 <p>knowing that:</p>
 
 <ul>
+<li><p>The <code>&lt;remote_name1&gt;</code> can be skipped and <code>origin</code> will be used instead</p></li>
+<li><p>The <code>&lt;remote_name2&gt;</code> can be skipped and <code>upstream</code> will be used instead</p></li>
+<li><p>There must be at least one <code>&lt;remote_name&gt;</code> mapping to <code>origin</code></p></li>
 <li><p>There can also be blank lines, comments or inline comments. Comments start
 with <code>#</code> until the end of the line.</p></li>
-<li><p>The <em>name</em> can be any valid linux folder name not containing <code>|</code> or <code>#</code>.</p></li>
-<li><p>The <em>urls</em> are passed to git as-is, so can be anything accepted by git, but
-must not contain <code>|</code> or <code>#</code>. For instance if you have SSH aliases in your
-config they are accepted.</p></li>
-<li><p>The <em>url</em> will be used for cloning the repository, thus mapped to the
-<code>origin</code> remote.</p></li>
-<li><p>The <em>upstream_url</em> will be mapped to the <code>upstream</code> remote in git.</p></li>
+<li><p>The <em>folder paths</em> can be any valid linux folder path not containing <code>|</code>, <code>#</code>
+or spaces.</p></li>
+<li><p>The <em>remote names</em> can be any string not containing <code>|</code>, <code>#</code> or spaces.</p></li>
+<li><p>The <em>remote urls</em> are passed to git as-is, so can be anything accepted by git,
+but must not contain <code>|</code>, <code>#</code> or spaces. For instance if you have SSH aliases
+in your config they are accepted.</p></li>
 </ul>
 
 <h3>
@@ -363,6 +366,7 @@ project will stay here for users who want something simple and portable.</p>
 <li>Frédéric Mahé</li>
 <li>Blount</li>
 <li>Alex Sanchez</li>
+<li>Antoine Belvire</li>
 </ul>
       </section>
     </div>
