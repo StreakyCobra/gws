@@ -270,12 +270,12 @@ function read_projects()
 {
     # Store cache state
     CACHED_PROJECTS_HASH=$(md5sum "${PROJECTS_FILE}" 2>/dev/null || echo NONE)
-    sed -i '/^declare -- CACHED_PROJECTS_HASH=/d' "${CACHE_FILE}"
+    sed -i -e '/^declare -- CACHED_PROJECTS_HASH=/d' "${CACHE_FILE}"
     declare -p CACHED_PROJECTS_HASH >> "${CACHE_FILE}"
 
     # Clear previous cache state
-    sed -i '/^declare -A projects=/d' "${CACHE_FILE}"
-    sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+    sed -i -e '/^declare -A projects=/d' "${CACHE_FILE}"
+    sed -i -e '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
     projects=()
     projects_indexes=()
 
@@ -347,11 +347,11 @@ function read_ignored()
 {
     # Store cache state
     CACHED_IGNORE_HASH=$(md5sum "${IGNORE_FILE}" 2>/dev/null || echo NONE)
-    sed -i '/^declare -- CACHED_IGNORE_HASH=/d' "${CACHE_FILE}"
+    sed -i -e '/^declare -- CACHED_IGNORE_HASH=/d' "${CACHE_FILE}"
     declare -p CACHED_IGNORE_HASH >> "${CACHE_FILE}"
 
     # Remove previous version in cache
-    sed -i '/^declare -a ignored_patterns=/d' "${CACHE_FILE}"
+    sed -i -e '/^declare -a ignored_patterns=/d' "${CACHE_FILE}"
     ignored_patterns=()
 
     [[ -e "$IGNORE_FILE" ]] || return 0
@@ -1002,7 +1002,7 @@ if [[ "$1" != "init" ]]; then
         read_ignored
 
         projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
-        sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+        sed -i -e '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
         declare -p projects_indexes >> "${CACHE_FILE}"
     fi
 
