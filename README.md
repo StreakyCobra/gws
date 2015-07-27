@@ -27,6 +27,9 @@ Installation
 * **Arch Linux**: Install the [gws](https://aur.archlinux.org/packages/gws/)
   package from AUR
 
+* **openSUSE**: Install the [gws](https://software.opensuse.org/package/gws/)
+  package from the devel:tools repository
+
 * **Other Linux/Mac**: You simply need to have the `src/gws` bash script
   somewhere inside your `$PATH`:
 
@@ -293,3 +296,4 @@ Many thanks to these people for contributions:
 - Frédéric Mahé
 - Blount
 - Alex Sanchez
+- Antoine Belvire
