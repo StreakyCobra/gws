@@ -290,7 +290,7 @@ function read_projects()
         # We get the directory
         dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
         # We get the rest of the configuration line containing remotes
-        remotes=$(cut -d${FIELD_SEP} -f1 --complement <<< "$line")
+        remotes=$(sed -e "s/^[^${FIELD_SEP}]*${FIELD_SEP}\?//" <<< "$line")
 
         # We get all the remotes
         count=0
@@ -301,7 +301,7 @@ function read_projects()
             # We get the first defined remote in the "remotes" variable
             remote=$(cut -d${FIELD_SEP} -f1 <<< "$remotes" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/[[:space:]]\+/ /g')
             # We remove the current remote from the line for next iteration
-            remotes=$(cut -d${FIELD_SEP} -f1 -s --complement <<< "$remotes")
+            remotes=$(sed -e "s/^[^${FIELD_SEP}]*${FIELD_SEP}\?//" <<< "$remotes")
             # We get its url
             remote_url=$(cut -d"${URL_NAME_SEP}" -f1 <<< "$remote" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
             # We get its name if any
