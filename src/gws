@@ -314,7 +314,7 @@ function read_projects()
                 elif [[ $count == 2 ]]; then
                     remote_name=$GIT_UPSTREAM
                 else
-                    error_msg="${C_RED}The URL at position $count for \"$dir\" is missing a name.${C_OFF}"
+                    error_msg="${C_RED}The URL at position ${count} for \"${dir}\" is missing a name.${C_OFF}"
                     echo -e "$error_msg"
                     exit 1
                 fi
