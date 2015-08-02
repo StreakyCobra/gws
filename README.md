@@ -30,7 +30,23 @@ Installation
 * **openSUSE**: Install the [gws](https://software.opensuse.org/package/gws/)
   package from the devel:tools repository
 
-* **Other Linux/Mac**: You simply need to have the `src/gws` bash script
+* **Mac**:
+
+  * On Mac OS X, it may be necessary to upgrade bash to have a version `> 4.0`.
+    It could be done with: `brew install bash`.
+
+  * There is currently a [bug](https://github.com/StreakyCobra/gws/issues/17) in
+    version `0.1.8`. The script use some options that are specific to GNU's
+    `sed` and `cut`, which are not available to OS X versions. A workaround is
+    to install `coreutils` and `gnu-sed` with `brew` (`brew install gnu-sed
+    coreutils`) and then define the following alias inside your `~/.bashrc`
+    file:
+
+    ```bash
+    alias gws="PATH=/usr/local/opt/coreutils/libexec/gnubin:usr/local/opt/gnu-sed/libexec/gnubin:$PATH gws"
+    ```
+
+* **Other Linux**: You simply need to have the `src/gws` bash script
   somewhere inside your `$PATH`:
 
   * If someone made a package for your distribution you are lucky.
@@ -43,8 +59,6 @@ Installation
     `bash` you can include any directory on your `$PATH` by including `export
     PATH="$PATH:/path/to/scripts/dir"` in your `~/.bashrc` file.
 
-  * On Mac OS X, it may be necessary to upgrade bash to have a version `> 4.0`.
-    It could be done with: `brew install bash`.
 
 On a side note, I could also suggest you to have a look at
 [peru](https://github.com/buildinspace/peru) which permits to keep files from
