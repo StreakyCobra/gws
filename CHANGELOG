@@ -1,3 +1,9 @@
+0.1.9
+=====
+
+* Different bugs correction:
+  - Unset CDPATH to avoid unwanted output (#18)
+
 0.1.8
 =====
 

@@ -45,6 +45,10 @@
 # Propagate fail in pipes
 set -o pipefail
 
+# Unset $CDPATH to avoid paths being printed and breaking functions.
+# See: https://github.com/StreakyCobra/gws/pull/18
+CDPATH=""
+
 # }}}
 
 # {{{ Parameters
