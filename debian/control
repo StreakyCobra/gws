@@ -1,0 +1,8 @@
+Section: Development
+Priority: optional
+Version: @@version@@
+Architecture: all
+Package: gws
+Maintainer: @@maintainer@@
+Description: gws is a KISS, bash, colorful helper to manage workspaces composed of git repositories.
+Homepage: https://streakycobra.github.io/gws/
