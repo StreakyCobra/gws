@@ -1,10 +1,13 @@
-PREFIX:=/usr/local
-BIN:=$(PREFIX)/bin
-DOC:=$(PREFIX)/share/doc/gws
-BASH_COMPLETION:=/etc/bash_completion.d
-ZSH_COMPLETION:=/usr/share/zsh/vendor-completions
-FORCE_INSTALL:=no
-MAINTAINER:=$(shell git log -1 --format='%an <%ae>')
+ifneq ($(wildcard config.mk),)
+include config.mk
+endif
+PREFIX?=/usr/local
+BIN?=$(PREFIX)/bin
+DOC?=$(PREFIX)/share/doc/gws
+BASH_COMPLETION?=/etc/bash_completion.d
+ZSH_COMPLETION?=/usr/share/zsh/vendor-completions
+FORCE_INSTALL?=no
+MAINTAINER?=$(shell git log -1 --format='%an <%ae>')
 
 VERSION=$(shell git describe --tags)
 DIRECTORIES=$(BIN) $(DOC) $(BASH_COMPLETION) $(ZSH_COMPLETION)
