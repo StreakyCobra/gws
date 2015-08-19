@@ -1,3 +1,7 @@
+CURRENT_MAKEFILE=$(MAKEFILE_LIST)
+GIT_CHECK=$(shell { [ -f .git/config ] && [ -x "$$(which git)" ]; } || echo git)
+
+# Configuration section
 ifneq ($(wildcard config.mk),)
 include config.mk
 endif
@@ -6,9 +10,8 @@ BIN?=$(PREFIX)/bin
 DOC?=$(PREFIX)/share/doc/gws
 BASH_COMPLETION?=/etc/bash_completion.d
 ZSH_COMPLETION?=/usr/share/zsh/vendor-completions
-GIT_CHECK=$(shell { [ -f .git/config ] && [ -x "$$(which git)" ]; } || echo git)
 ifeq (,$(GIT_CHECK))
-MAINTAINER?=$(shell git log -1 --format='%an <%ae>')
+MAINTAINER?=$(shell git log -1 --format='%an <%ae>' -- $(CURRENT_MAKEFILE))
 endif
 
 DIRECTORIES=$(BIN) $(DOC) $(BASH_COMPLETION) $(ZSH_COMPLETION)
