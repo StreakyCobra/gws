@@ -312,3 +312,4 @@ Many thanks to these people for contributions:
 - Alex Sanchez
 - Antoine Belvire
 - Pascal Obry
+- Thomas Pérennou
