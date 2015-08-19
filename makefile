@@ -8,10 +8,7 @@ BASH_COMPLETION?=/etc/bash_completion.d
 ZSH_COMPLETION?=/usr/share/zsh/vendor-completions
 GIT_CHECK=$(shell { [ -f .git/config ] && [ -x "$$(which git)" ]; } || echo git)
 ifeq (,$(GIT_CHECK))
-FORCE_INSTALL?=no
 MAINTAINER?=$(shell git log -1 --format='%an <%ae>')
-else
-FORCE_INSTALL?=yes
 endif
 
 DIRECTORIES=$(BIN) $(DOC) $(BASH_COMPLETION) $(ZSH_COMPLETION)
@@ -22,7 +19,7 @@ DEBIAN_FILES=$(shell ( cd debian; find . -type f ))
 DEBIAN_TOOLS_CHECK=$(shell for tool in $(DEBIAN_TOOLS); do which $$tool 2>&1 > /dev/null || echo $$tool; done )
 
 ifeq (,$(GIT_CHECK))
-VERSION=$(shell git describe --tags)
+VERSION=$(shell git describe --tags --dirty)
 endif
 
 help:
@@ -43,9 +40,8 @@ install: $(INSTALL)
 
 pre.install:
 ifeq (,$(GIT_CHECK))
-	$(if $(findstring yes,$(FORCE_INSTALL)),,\
-		$(info Check Git repository status before install)\
-		@git diff-index --quiet HEAD\
+	$(if $(shell git diff-index --quiet HEAD || echo dirty),\
+		$(warning Git repository is dirty) \
 	)
 else
 ifeq (,$(VERSION))
