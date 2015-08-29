@@ -16,14 +16,13 @@ endif
 
 DIRECTORIES=$(BIN) $(DOC) $(BASH_COMPLETION) $(ZSH_COMPLETION)
 INSTALL=$(BIN)/gws $(DOC)/changelog.gz $(DOC)/license $(DOC)/readme.md.gz $(BASH_COMPLETION)/gws $(ZSH_COMPLETION)/_gws
-PACKAGE=gws_$(VERSION)
 DEBIAN_TOOLS=dpkg dpkg-deb fakeroot
 DEBIAN_FILES=$(shell ( cd debian; find . -type f ))
 DEBIAN_TOOLS_CHECK=$(shell for tool in $(DEBIAN_TOOLS); do which $$tool 2>&1 > /dev/null || echo $$tool; done )
-
 ifeq (,$(GIT_CHECK))
-VERSION=$(shell git describe --tags --dirty)
+VERSION=$(shell git describe --dirty --tags --match '[0-9]*\.[0-9]*\.[0-9]*')
 endif
+PACKAGE=gws_$(VERSION)
 
 help:
 	$(info Available targets are:)
