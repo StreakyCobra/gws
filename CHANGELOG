@@ -3,6 +3,8 @@
 
 * Different bugs correction:
   - Unset CDPATH to avoid unwanted output (#18)
+* Some bugs correction:
+  - Detect repository that are prefix of another one (#20)
 
 0.1.8
 =====

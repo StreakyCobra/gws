@@ -30,6 +30,8 @@ $(WORKSPACE):
 		touch test; git add test; git commit -m message 
 	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/ignoring/gws
 	cd $(WORKSPACE)/ignoring/gws; git checkout develop
+	git init $(WORKSPACE)/prefix/foo
+	git init $(WORKSPACE)/prefix/foo-bar
 
 $(WORKSPACE)/.ignore.gws: $(WORKSPACE)
 	echo "^ignoring/" > $@
