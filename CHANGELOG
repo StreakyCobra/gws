@@ -1,10 +1,10 @@
 0.1.9
 =====
 
-* Different bugs correction:
-  - Unset CDPATH to avoid unwanted output (#18)
+* Add Makefile and Debian packaging
 * Remove unused TODO file
 * Some bugs correction:
+  - Unset CDPATH to avoid unwanted output (#18)
   - Detect repository that are prefix of another one (#20)
 
 0.1.8
