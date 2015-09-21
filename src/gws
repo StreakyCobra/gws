@@ -11,7 +11,9 @@
 # This is a helper to manage workspaces composed of git repositories.          #
 ################################################################################
 
-# {{{ License
+#-------------------------------------------------------------------------------
+#  License
+#-------------------------------------------------------------------------------
 
 # The MIT License (MIT)
 #
@@ -35,9 +37,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# }}}
 
-# {{{ Bash options
+#-------------------------------------------------------------------------------
+#  Bash options
+#-------------------------------------------------------------------------------
 
 # Uncomment for Debug
 # set -x
@@ -49,9 +52,10 @@ set -o pipefail
 # See: https://github.com/StreakyCobra/gws/pull/18
 CDPATH=""
 
-# }}}
 
-# {{{ Parameters
+#-------------------------------------------------------------------------------
+#  Parameters
+#-------------------------------------------------------------------------------
 
 # Version number
 VERSION="0.1.9-DEV"
@@ -118,9 +122,10 @@ else
     C_OFF=""
 fi
 
-# }}}
 
-# {{{ Variables declarations
+#-------------------------------------------------------------------------------
+#  Variables declarations
+#-------------------------------------------------------------------------------
 
 # Associative array containing the projects
 declare -A projects
@@ -134,9 +139,10 @@ declare -a ignored_patterns
 # Array used to transmit the list of branches
 declare -a branches
 
-# }}}
 
-# {{{ General functions
+#-------------------------------------------------------------------------------
+#  General functions
+#-------------------------------------------------------------------------------
 
 # Check if an array contains a value
 function array_contains()
@@ -237,9 +243,10 @@ function keep_prefixed_projects()
     return 0
 }
 
-# }}}
 
-# {{{ Projects functions
+#-------------------------------------------------------------------------------
+#  Projects functions
+#-------------------------------------------------------------------------------
 
 # Is the current directory the root of workspace?
 function is_project_root()
@@ -410,9 +417,10 @@ function get_repo_url()
     return 0
 }
 
-# }}}
 
-# {{{ Git functions
+#-------------------------------------------------------------------------------
+#  Git functions
+#-------------------------------------------------------------------------------
 
 # Clone a repository
 function git_clone()
@@ -653,9 +661,10 @@ function git_check_branch_origin()
     return 1
 }
 
-# }}}
 
-# {{{ Command functions
+#-------------------------------------------------------------------------------
+#  Command functions
+#-------------------------------------------------------------------------------
 
 # Init command
 function cmd_init()
@@ -986,7 +995,6 @@ function usage()
     exit 1
 }
 
-# }}}
 
 # Except for the special case of "init" in which there is no project files
 if [[ "$1" != "init" ]]; then
