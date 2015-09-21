@@ -5,7 +5,7 @@
 * Remove unused TODO file
 * Some bugs correction:
   - Unset CDPATH to avoid unwanted output (#18)
-  - Detect repository that are prefix of another one (#20)
+  - Detect repositories that are prefix of other ones (#20)
 
 0.1.8
 =====

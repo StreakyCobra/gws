@@ -8,7 +8,7 @@
 # Version:      0.1.9-DEV                                                      #
 #                                                                              #
 # 'gws' is the abbreviation of 'Git WorkSpace'.                                #
-# This is an helper to manage workspaces which contain git repositories.       #
+# This is a helper to manage workspaces composed of git repositories.          #
 ################################################################################
 
 # {{{ License
