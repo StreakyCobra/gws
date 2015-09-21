@@ -151,6 +151,7 @@ function array_contains()
 {
     local seeking=$1; shift
     local in=1
+    local element
 
     for element; do
         if [[ "$element" == "$seeking" ]]; then
@@ -245,7 +246,7 @@ function keep_prefixed_projects()
     for dir in "${projects_indexes[@]}"
     do
         # Get its full path
-        current="${PWD}/${dir}/"
+        current=$(cd "${PWD}/${dir}/" && pwd )/
 
         # If it match, add it to the output
         [[ $current =~ ^$limit_to ]] && echo -n "$dir "
@@ -306,7 +307,7 @@ function read_projects()
     local line dir remotes count repo remotes_list
 
     # Read line by line (discard comments and empty lines)
-    while read line
+    while read -r line
     do
         # Remove inline comments
         line=$(sed -e 's/#.*$//' <<< "$line")
@@ -424,15 +425,15 @@ function get_repo_url()
     # Check if origin is present
     for remote in "${array[@]}";
     do
-        remote_name=$(cut -d${FIELD_SEP} -f1 <<< ${remote})
-        remote_url=$(cut -d${FIELD_SEP} -f2 <<< ${remote})
+        remote_name=$(cut -d${FIELD_SEP} -f1 <<< "${remote}")
+        remote_url=$(cut -d${FIELD_SEP} -f2 <<< "${remote}")
         assoc["${remote_name}"]="${remote_url}"
     done
 
     [ "${assoc[${GIT_ORIGIN}]+isset}" ] || return 1
 
-    # Return the URL
-    cut -d${FIELD_SEP} -f2 <<< ${array[${GIT_ORIGIN}]}
+    # Return the origin URL
+    cut -d${FIELD_SEP} -f2 <<< "${assoc[${GIT_ORIGIN}]}"
 
     return 0
 }
@@ -690,7 +691,7 @@ function git_check_branch_origin()
 function cmd_init()
 {
     # Go back to start directory
-    cd "$START_PWD"
+    cd "$START_PWD" || (echo "Initial folder ${START_PWD} doesn't exist any longer" && exit 1)
 
     # Check if already a workspace
     [[ -f ${PROJECTS_FILE} ]] && echo -e "${C_RED}Already a workspace.${C_OFF}" && return 1
@@ -708,7 +709,7 @@ function cmd_init()
         echo -n "$dir | $(git_remote_url "$dir" "${GIT_ORIGIN}")"
         for remote in $(git_remotes "$dir");
         do
-            [[ "$remote" != "${GIT_ORIGIN}" ]] && echo -n " | $(git_remote_url $dir $remote) $remote"
+            [[ "$remote" != "${GIT_ORIGIN}" ]] && echo -n " | $(git_remote_url "$dir" "$remote") $remote"
         done
         echo
     done)
@@ -736,7 +737,7 @@ function cmd_update()
         echo -e "${C_BLUE}$dir${C_OFF}:"
 
         # Check if repository already exists, and continue if it is the case
-        if [ -d "$dir" ]; then
+        if [[ -d "$dir" ]]; then
             # Print the information
             printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
         elif [[ -z $repo ]]; then
@@ -769,8 +770,8 @@ function cmd_update()
         IFS=${ARRAY_LINE_SEP} read -a array <<< "${projects[$dir]}"
         for remote in "${array[@]}"
         do
-            remote_name=$(cut -d${FIELD_SEP} -f1 <<< ${remote})
-            remote_url=$(cut -d${FIELD_SEP} -f2 <<< ${remote})
+            remote_name=$(cut -d${FIELD_SEP} -f1 <<< "${remote}")
+            remote_url=$(cut -d${FIELD_SEP} -f2 <<< "${remote}")
             if ! git_remote_exists "${dir}" "${remote_name}"; then
                 git_add_remote "${dir}" "${remote_name}" "${remote_url}"
             fi
