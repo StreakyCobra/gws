@@ -180,6 +180,9 @@ function remove_matching()
         # For all prefixes in `b`
         for b in "${set_b[@]}"
         do
+            # I'm not sur why I wrote this or where I got it, but it seems to
+            # escape characters that has a meaning for regexp
+            b=$(sed -e 's/[]\/()$*.^|[]/\\&/g' <<< "$b")
             # If `a` match the prefix, store result and exit the loop
             [[ $a =~ $b ]] && ok=1 && break
         done
