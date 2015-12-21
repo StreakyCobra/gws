@@ -72,6 +72,9 @@ IGNORE_FILE=".ignore.gws"
 # Name of the file containing the cache.
 CACHE_FILE=".cache.gws"
 
+# Name of the file overriding common colors definition
+THEME_FILE=".theme.gws"
+
 # Field separator in the projects list.
 FIELD_SEP='|'
 
@@ -104,22 +107,23 @@ S_FAST_FORWARD=2
 
 # Printing in color.
 if [[ -t 1 ]]; then
-    C_RED="\e[91m"
-    C_GREEN="\e[92m"
-    C_YELLOW="\e[93m"
-    C_BLUE="\e[94m"
-    C_MAGENTA="\e[95m"
-    C_CYAN="\e[96m"
-    C_WHITE="\e[97m"
+    C_NOT_SYNC="\e[91m"
+    C_CLEAN="\e[92m"
+    C_NO_REMOTE="\e[93m"
+    C_REPO="\e[94m"
+    C_BRANCH="\e[95m"
+    C_LOGS="\e[96m"
     C_OFF="\e[0m"
+    if [[ -e $THEME_FILE ]]; then
+      source .theme.gws;
+    fi
 else
-    C_RED=""
-    C_GREEN=""
-    C_YELLOW=""
-    C_BLUE=""
-    C_MAGENTA=""
-    C_CYAN=""
-    C_WHITE=""
+    C_NOT_SYNC=""
+    C_CLEAN=""
+    C_NO_REMOTE=""
+    C_REPO=""
+    C_BRANCH=""
+    C_LOGS=""
     C_OFF=""
 fi
 
@@ -346,7 +350,7 @@ function read_projects()
                 elif [[ $count == 2 ]]; then
                     remote_name=$GIT_UPSTREAM
                 else
-                    error_msg="${C_RED}The URL at position ${count} for \"${dir}\" is missing a name.${C_OFF}"
+                    error_msg="${C_NOT_SYNC}The URL at position ${count} for \"${dir}\" is missing a name.${C_OFF}"
                     echo -e "$error_msg"
                     exit 1
                 fi
@@ -697,7 +701,7 @@ function cmd_init()
     cd "$START_PWD" || (echo "Initial folder ${START_PWD} doesn't exist any longer" && exit 1)
 
     # Check if already a workspace
-    [[ -f ${PROJECTS_FILE} ]] && echo -e "${C_RED}Already a workspace.${C_OFF}" && return 1
+    [[ -f ${PROJECTS_FILE} ]] && echo -e "${C_NOT_SYNC}Already a workspace.${C_OFF}" && return 1
 
     local found remote
     declare -a found
@@ -718,10 +722,10 @@ function cmd_init()
     done)
 
     # Write the file if it is not empty
-    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_GREEN}Workspace file «${PROJECTS_FILE}» created.${C_OFF}" && return 0
+    [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_CLEAN}Workspace file «${PROJECTS_FILE}» created.${C_OFF}" && return 0
 
     # Display informations messages
-    echo -e "${C_YELLOW}No repository found.${C_OFF}"
+    echo -e "${C_NO_REMOTE}No repository found.${C_OFF}"
     return 1
 }
 
@@ -737,19 +741,19 @@ function cmd_update()
         repo=$(get_repo_url "${projects[$dir]}")
 
         # Print the repository
-        echo -e "${C_BLUE}$dir${C_OFF}:"
+        echo -e "${C_REPO}$dir${C_OFF}:"
 
         # Check if repository already exists, and continue if it is the case
         if [[ -d "$dir" ]]; then
             # Print the information
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+            printf "${INDENT}%-${MBL}s${C_CLEAN} %s${C_OFF} " " " "Already exists"
         elif [[ -z $repo ]]; then
             # Print the information
-            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF} " " " "No URL defined"
+            printf "${INDENT}%-${MBL}s${C_NOT_SYNC} %s${C_OFF} " " " "No URL defined"
         fi
 
         # Print information for local only repositories
-        [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}" && continue
+        [[ -z $repo ]] && echo -e "${C_REPO}[Local only repository]${C_OFF}" && continue
 
         # Finish the newline
         printf "\n"
@@ -758,15 +762,15 @@ function cmd_update()
         if [[ ! -d "$dir" ]]; then
 
             # Print the information
-            printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
+            printf "${INDENT}%-${MBL}s${C_LOGS} %s${C_OFF}\n" " " "Cloning…"
 
             # Clone the repository
             if ! git_clone "$repo" "$dir"; then
-                printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Error"
+                printf "${INDENT}%-${MBL}s${C_NOT_SYNC} %s${C_OFF}\n" " " "Error"
                 return 1
             fi
 
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Cloned"
+            printf "${INDENT}%-${MBL}s${C_CLEAN} %s${C_OFF}\n" " " "Cloned"
         fi
 
         # Verify all remotes, create if not existing
@@ -798,12 +802,12 @@ function cmd_status()
         repo=$(get_repo_url "${projects[$dir]}")
 
         # Print the project name
-        echo -e "${C_BLUE}$dir${C_OFF}:"
+        echo -e "${C_REPO}$dir${C_OFF}:"
 
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
-            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
-            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}"
+            printf "${INDENT}%-${MBL}s${C_NO_REMOTE} %s${C_OFF} " " " "Missing repository"
+            [[ -z $repo ]] && echo -e "${C_REPO}[Local only repository]${C_OFF}"
             printf "\n"
             uptodate=0
             continue
@@ -828,22 +832,22 @@ function cmd_status()
 
         # Check for not commited not cached changes
         if ! git_check_uncached_uncommited "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
-            echo -ne "${C_RED}Dirty (Uncached changes)${C_OFF} "
+            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_NOT_SYNC}Dirty (Uncached changes)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
         # Check for not commited changes
         elif ! git_check_cached_uncommited "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
-            echo -ne "${C_RED}Dirty (Uncommitted changes)${C_OFF} "
+            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_NOT_SYNC}Dirty (Uncommitted changes)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
-            echo -ne "${C_RED}Dirty (Untracked files)${C_OFF} "
+            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_NOT_SYNC}Dirty (Untracked files)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
@@ -851,14 +855,14 @@ function cmd_status()
         # to check for synchronization, it is clean if there is no untracked,
         # uncached or uncommited changes.
         elif [[ -z $repo ]]; then
-            printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
-            echo -ne "${C_GREEN}Clean${C_OFF} "
+            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            echo -ne "${C_CLEAN}Clean${C_OFF} "
             printed=1
         fi
 
         # Add special information for local only repositories
         if [[ -z $repo ]]; then
-            echo -e "${C_BLUE}[Local only repository]${C_OFF}"
+            echo -e "${C_REPO}[Local only repository]${C_OFF}"
             continue
         fi
 
@@ -869,10 +873,10 @@ function cmd_status()
         git_branches "$dir"
 
         # If no branches
-        [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
+        [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_NO_REMOTE} %s${C_OFF}\n" " " "Empty repository"
 
         # Fetch origin
-        [[ $1 -eq $S_FETCH ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
+        [[ $1 -eq $S_FETCH ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_LOGS} %s${C_OFF}\n" " " "Fetched from origin"
 
         # Check for difference with origin
         for branch in "${branches[@]}"
@@ -894,10 +898,10 @@ function cmd_status()
             if [[ $1 -eq $S_FAST_FORWARD ]]; then
                 # Pull fast forward for current branch
                 if [ "$branch" = "$current" ]; then
-                    git_fast_forward "$dir" && after=" ${C_CYAN}(fast-forwarded)${C_OFF}${after}"
+                    git_fast_forward "$dir" && after=" ${C_LOGS}(fast-forwarded)${C_OFF}${after}"
                 # Fetch update for others
                 else
-                    git_fetch_update "$dir" "$branch" && after=" ${C_CYAN}(fast-forwarded)${C_OFF}${after}"
+                    git_fetch_update "$dir" "$branch" && after=" ${C_LOGS}(fast-forwarded)${C_OFF}${after}"
                 fi
             fi
 
@@ -909,26 +913,26 @@ function cmd_status()
 
             # If the hashes are different
             if [[ "$rc" -eq 1 ]]; then
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_RED}Not in sync with ${GIT_ORIGIN}/$branch${C_OFF}"
+                printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                echo -en "${C_NOT_SYNC}Not in sync with ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
 
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_YELLOW}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
+                printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                echo -en "${C_NO_REMOTE}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
 
             # If there is no local hash (must never happen... but who knows?)
             elif [[ "$rc" -eq 3 ]]; then
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_RED}Internal error${C_OFF}"
+                printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                echo -en "${C_NOT_SYNC}Internal error${C_OFF}"
                 uptodate=0
 
             # Otherwise
             else
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_GREEN}Clean${C_OFF}"
+                printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                echo -en "${C_CLEAN}Clean${C_OFF}"
 
             fi
 
@@ -970,25 +974,25 @@ function cmd_check()
     for dir in "${all[@]}"
     do
         # Print the repository
-        echo -e "${C_BLUE}$dir${C_OFF}:"
+        echo -e "${C_REPO}$dir${C_OFF}:"
 
         # Check if the directory is ignored
         if array_contains "$dir" "${projects_ignored[@]}"; then
-            printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Ignored"
+            printf "${INDENT}%-${MBL}s${C_LOGS} %s${C_OFF}\n" " " "Ignored"
             continue
         fi
 
         # Check if the directory exists
         if [ ! -d "$dir" ]; then
-            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Missing"
+            printf "${INDENT}%-${MBL}s${C_NO_REMOTE} %s${C_OFF}\n" " " "Missing"
             continue
         fi
 
         # Check if it is listed as project and print according message
         if exists_project "$dir"; then
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF}\n" " " "Known"
+            printf "${INDENT}%-${MBL}s${C_CLEAN} %s${C_OFF}\n" " " "Known"
         else
-            printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF}\n" " " "Unknown"
+            printf "${INDENT}%-${MBL}s${C_NOT_SYNC} %s${C_OFF}\n" " " "Unknown"
         fi
     done
 
@@ -1000,20 +1004,20 @@ function usage()
 {
     echo -e "gws is an helper to manage workspaces which contain git repositories."
     echo -e ""
-    echo -e "Usages: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF} [${C_GREEN}<directory>${C_OFF}]"
-    echo -e "        ${C_RED}$(basename "$0")${C_OFF} [${C_GREEN}<directory>${C_OFF}]"
+    echo -e "Usages: ${C_NOT_SYNC}$(basename "$0")${C_OFF} ${C_REPO}<command>${C_OFF} [${C_CLEAN}<directory>${C_OFF}]"
+    echo -e "        ${C_NOT_SYNC}$(basename "$0")${C_OFF} [${C_CLEAN}<directory>${C_OFF}]"
     echo -e ""
-    echo -e "where ${C_BLUE}<command>${C_OFF} is:"
-    echo -e "    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
-    echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
-    echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
-    echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
-    echo -e "    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
-    echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
+    echo -e "where ${C_REPO}<command>${C_OFF} is:"
+    echo -e "    ${C_REPO}init${C_OFF}   - Detect the repositories and create the projects list"
+    echo -e "    ${C_REPO}update${C_OFF} - Update the workspace to get new repositories from projects list"
+    echo -e "    ${C_REPO}status${C_OFF} - Print status for all repositories in the workspace"
+    echo -e "    ${C_REPO}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
+    echo -e "    ${C_REPO}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
+    echo -e "    ${C_REPO}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
     echo -e ""
-    echo -e "If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed."
+    echo -e "If no ${C_REPO}<command>${C_OFF} is specified, the command ${C_REPO}status${C_OFF} is assumed."
     echo -e ""
-    echo -e "where ${C_GREEN}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder"
+    echo -e "where ${C_CLEAN}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder"
     echo -e "of the workspace."
     echo -e ""
     exit 1
@@ -1046,7 +1050,7 @@ if [[ "$1" != "init" ]]; then
     # If a path is specified as second argument, limit projects to the ones matching
     # the path
     if [[ -n "$2" ]]; then
-        error_msg="${C_RED}The directory '$2' is not found.${C_OFF}"
+        error_msg="${C_NOT_SYNC}The directory '$2' is not found.${C_OFF}"
         projects_list=$(keep_prefixed_projects "$2") || (echo -e "$error_msg" && exit 1) || exit 1
         projects_indexes=( ${projects_list} )
     fi
@@ -1074,14 +1078,14 @@ case $1 in
         cmd_check
         ;;
     "--version"|"-v")
-        echo -e "gws version ${C_RED}$VERSION${C_OFF}"
+        echo -e "gws version ${C_NOT_SYNC}$VERSION${C_OFF}"
         ;;
     "--help"|"-h")
         usage
         ;;
     *)
         if [[ -n "$1" ]]; then
-            error_msg="${C_RED}The directory '$1' is not found and is not a recognized command.${C_OFF}"
+            error_msg="${C_NOT_SYNC}The directory '$1' is not found and is not a recognized command.${C_OFF}"
             projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
             projects_indexes=( ${projects_list} )
         fi
