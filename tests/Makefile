@@ -3,6 +3,7 @@ GWS_SCRIPT=$(PWD)/../src/gws
 
 # Workspace folder name
 WORKSPACE=Workspace
+TEST_UPDATE_WORKSPACE=$(WORKSPACE)_test_update
 
 prepare:
 	$(MAKE) clean				# Clean existing folder
@@ -45,6 +46,19 @@ perturbate:
 	cd $(WORKSPACE)/tools/coursera-dl; touch test; git add test
 
 clean:
-	rm -rf $(WORKSPACE)
+	rm -rf $(WORKSPACE) $(TEST_UPDATE_WORKSPACE)
 
 .PHONY: tests perturbate test_project_gws test_status test_update test_check test_fetch test_ff clean
+
+tests: test_update
+
+test_update:
+	rm -rf $(TEST_UPDATE_WORKSPACE)
+	mkdir -p rf $(TEST_UPDATE_WORKSPACE)
+	cp test_update_projects.gws $(TEST_UPDATE_WORKSPACE)/.projects.gws
+	cp test_update_ignore.gws $(TEST_UPDATE_WORKSPACE)/.ignore.gws
+	cd $(TEST_UPDATE_WORKSPACE); $(GWS_SCRIPT) update >/dev/null
+	# update command clones all projects except ignored ones
+	test ! -d $(TEST_UPDATE_WORKSPACE)/ignoring/gws
+	test -d $(TEST_UPDATE_WORKSPACE)/gws
+	test -d $(TEST_UPDATE_WORKSPACE)/gws2
