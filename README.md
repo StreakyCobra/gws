@@ -88,7 +88,8 @@ QuickStart
 
 **and then**
 
-* Clone all missing repositories with `gws update`.
+* Clone all missing repositories with `gws update`, or some specific ones with
+  `gws clone`.
 
 * Do some hacking.
 
@@ -188,6 +189,11 @@ This tool offers some functionalities, among which:
   those unlisted repositories).
 
         $ gws update
+
+* It can also clone a specified selection of non-existing repositories from the
+  projects list, if you don't need all of them right now.
+
+        $ gws clone work/theSoftware
 
 * It can monitor all listed repositories in one command (uncommitted changes,
   untracked changes, branches not synced with origin, ...).
@@ -313,3 +319,4 @@ Many thanks to these people for contributions:
 - Antoine Belvire
 - Pascal Obry
 - Thomas Pérennou
+- Emil Lundberg
