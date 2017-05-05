@@ -5,7 +5,7 @@ _gws()
     local cur="${COMP_WORDS[COMP_CWORD]}"
 
     case $COMP_CWORD in
-        1) COMPREPLY=( $(compgen -S " " -W "init update status fetch ff check" -- $cur) $(compgen -S "/" -A directory -- "$cur") )
+        1) COMPREPLY=( $(compgen -S " " -W "init clone update status fetch ff check" -- $cur) $(compgen -S "/" -A directory -- "$cur") )
            ;;
         2) COMPREPLY=( $(compgen -S "/" -A directory -- "$cur") )
            ;;
