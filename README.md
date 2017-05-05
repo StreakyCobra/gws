@@ -1,6 +1,3 @@
-**IMPORTANT: I can not maintain this project any longer. If anyone is wanting to
-take over, please contact me.**
-
 gws
 ===
 
