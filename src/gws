@@ -5,7 +5,7 @@
 # OS:           Probably all linux distributions                               #
 # Requirements: git, bash > 4.0                                                #
 # License:      MIT (See below)                                                #
-# Version:      0.1.8                                                          #
+# Version:      0.1.10                                                         #
 #                                                                              #
 # 'gws' is the abbreviation of 'Git WorkSpace'.                                #
 # This is an helper to manage workspaces which contain git repositories.       #
@@ -50,7 +50,7 @@ set -o pipefail
 # {{{ Parameters
 
 # Version number
-VERSION="0.1.8"
+VERSION="0.1.10"
 
 # Starting directory
 START_PWD="$(pwd)"
@@ -688,13 +688,18 @@ function cmd_init()
     return 1
 }
 
-# Update command
-function cmd_update()
+# Selective clone command
+function cmd_clone()
 {
     local dir repo remote remote_name remote_url
 
+    if [[ -z "$1" ]]; then
+        echo -e "Usage: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}clone${C_OFF} ${C_GREEN}<directory>...${C_OFF}"
+        return 1
+    fi
+
     # For all projects
-    for dir in "${projects_indexes[@]}"
+    for dir in "$@"
     do
         # Get informations about the current project
         repo=$(get_repo_url "${projects[$dir]}")
@@ -742,6 +747,21 @@ function cmd_update()
                 git_add_remote "${dir}" "${remote_name}" "${remote_url}"
             fi
         done
+    done
+
+    return 0
+}
+
+
+# Update command
+function cmd_update()
+{
+    local dir
+
+    # For all projects
+    for dir in "${projects_indexes[@]}"
+    do
+        cmd_clone "$dir"
     done
 
     return 0
@@ -969,6 +989,7 @@ function usage()
     echo -e "where ${C_BLUE}<command>${C_OFF} is:"
     echo -e "    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
     echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
+    echo -e "    ${C_BLUE}clone${C_OFF}  - Selectively clone specific repositories from projects list"
     echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
     echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
     echo -e "    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
@@ -1009,9 +1030,12 @@ if [[ "$1" != "init" ]]; then
     # If a path is specified as second argument, limit projects to the ones matching
     # the path
     if [[ -n "$2" ]]; then
-        error_msg="${C_RED}The directory '$2' is not found.${C_OFF}"
-        projects_list=$(keep_prefixed_projects "$2") || (echo -e "$error_msg" && exit 1) || exit 1
-        projects_indexes=( ${projects_list} )
+        # But don't error out in the case of "clone", becuase the directory will probably not exist
+        if [[ "$1" != "clone" ]]; then
+            error_msg="${C_RED}The directory '$2' is not found.${C_OFF}"
+            projects_list=$(keep_prefixed_projects "$2") || (echo -e "$error_msg" && exit 1) || exit 1
+            projects_indexes=( ${projects_list} )
+        fi
     fi
 fi
 
@@ -1020,6 +1044,10 @@ fi
 case $1 in
     "init")
         cmd_init
+        ;;
+    "clone")
+        shift
+        cmd_clone "$@"
         ;;
     "update")
         cmd_update
