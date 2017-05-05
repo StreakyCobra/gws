@@ -1,3 +1,12 @@
+0.1.10
+=====
+
+Version 0.1.9 is already used in unfinished development.
+
+* Add `clone` command, which works like `update` but clones only those repos
+  named explicitly on the command line
+
+
 0.1.8
 =====
 
