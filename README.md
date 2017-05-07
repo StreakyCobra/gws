@@ -308,6 +308,12 @@ other more maintainable language.
 written in OCaml! I'll let you know if the project maturate! In any case this
 project will stay here for users who want something simple and portable.
 
+Maintainers
+-----------
+
+The project is currently maintained by Emil Lundberg (emlun), after having been
+started by Fabien Dubosson (StreakyCobra).
+
 Contributors
 ------------
 
@@ -317,4 +323,3 @@ Many thanks to these people for contributions:
 - Blount
 - Alex Sanchez
 - Antoine Belvire
-- Emil Lundberg
