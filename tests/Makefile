@@ -31,6 +31,7 @@ $(WORKSPACE):
 		git checkout -b aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiiccccc; \
 		touch test; git add test; git commit -m message
 	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/ignoring/gws
+	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/work/gws
 	cd $(WORKSPACE)/ignoring/gws; git checkout develop
 
 $(WORKSPACE)/.ignore.gws: $(WORKSPACE)
