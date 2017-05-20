@@ -1005,6 +1005,8 @@ function usage()
 
 # }}}
 
+CDPATH=""
+
 # Except for the special case of "init" in which there is no project files
 if [[ "$1" != "init" ]]; then
     # First move to the first parent directory containing a projects file
