@@ -767,6 +767,16 @@ function cmd_update()
     return 0
 }
 
+function print_project_name_unless_done_already() {
+    local project_name done_already
+    project_name="$1"
+    done_already="$2"
+    if [[ "$done_already" -eq 0 ]]; then
+        # Print the project name
+        echo -e "${C_BLUE}$project_name${C_OFF}:"
+    fi
+}
+
 # Status command
 function cmd_status()
 {
@@ -780,15 +790,17 @@ function cmd_status()
         # Get informations about the current project
         repo=$(get_repo_url "${projects[$dir]}")
 
-        # Print the project name
-        echo -e "${C_BLUE}$dir${C_OFF}:"
+        # Project name has not been printed yet
+        project_name_printed=0
 
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
             [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}"
             printf "\n"
             uptodate=0
+            project_name_printed=1
             continue
         fi
 
@@ -811,37 +823,47 @@ function cmd_status()
 
         # Check for not commited not cached changes
         if ! git_check_uncached_uncommited "$dir"; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Uncached changes)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
+            project_name_printed=1
         # Check for not commited changes
         elif ! git_check_cached_uncommited "$dir"; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Uncommitted changes)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
+            project_name_printed=1
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_RED}Dirty (Untracked files)${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
+            project_name_printed=1
         # If the "origin" URL is not defined in the project list, then no need
         # to check for synchronization, it is clean if there is no untracked,
         # uncached or uncommited changes.
         elif [[ -z $repo ]]; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_GREEN}Clean${C_OFF} "
             printed=1
+            project_name_printed=1
         fi
 
         # Add special information for local only repositories
         if [[ -z $repo ]]; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             echo -e "${C_BLUE}[Local only repository]${C_OFF}"
+            project_name_printed=1
             continue
         fi
 
@@ -853,12 +875,16 @@ function cmd_status()
 
         # If no branches
         if [[ 0 -eq ${#branches[@]} ]]; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
+            project_name_printed=1
         fi
 
         # Fetch origin
         if [[ $1 -eq $S_FETCH ]]; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
             git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
+            project_name_printed=1
         fi
 
         # Check for difference with origin
@@ -898,26 +924,34 @@ function cmd_status()
 
             # If the hashes are different
             if [[ "$rc" -eq 1 ]]; then
+                print_project_name_unless_done_already "$dir" $project_name_printed
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_RED}Not in sync with ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
+                project_name_printed=1
 
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
+                print_project_name_unless_done_already "$dir" $project_name_printed
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_YELLOW}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
+                project_name_printed=1
 
             # If there is no local hash (must never happen... but who knows?)
             elif [[ "$rc" -eq 3 ]]; then
+                print_project_name_unless_done_already "$dir" $project_name_printed
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_RED}Internal error${C_OFF}"
                 uptodate=0
+                project_name_printed=1
 
             # Otherwise
             else
+                print_project_name_unless_done_already "$dir" $project_name_printed
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_GREEN}Clean${C_OFF}"
+                project_name_printed=1
 
             fi
 
