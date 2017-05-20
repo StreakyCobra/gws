@@ -42,7 +42,7 @@ $(WORKSPACE)/.project.gws: $(WORKSPACE)
 perturbate:
 	cd $(WORKSPACE)/work/neuraltalk; touch test
 	cd $(WORKSPACE)/work/docker-gitlab; git checkout master; git reset --hard HEAD^
-	cd $(WORKSPACE)/tools/q; touch test; git add test; git commit -m message
+	cd $(WORKSPACE)/tools/q; touch testfile; git add testfile; git commit -m message
 	cd $(WORKSPACE)/tools; rm -rf peru
 	cd $(WORKSPACE)/tools/coursera-dl; touch test; git add test
 
