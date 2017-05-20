@@ -852,10 +852,14 @@ function cmd_status()
         git_branches "$dir"
 
         # If no branches
-        [[ 0 -eq ${#branches[@]} ]] && printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
+        if [[ 0 -eq ${#branches[@]} ]]; then
+            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF}\n" " " "Empty repository"
+        fi
 
         # Fetch origin
-        [[ $1 -eq $S_FETCH ]] && git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
+        if [[ $1 -eq $S_FETCH ]]; then
+            git_fetch "$dir" && printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Fetched from origin"
+        fi
 
         # Check for difference with origin
         for branch in "${branches[@]}"
@@ -871,7 +875,9 @@ function cmd_status()
             fi
 
             # If the branch is already done, skip it
-            [[ $branch_done -eq 1 ]] && [ "$branch" = "$current" ] && continue
+            if [[ $branch_done -eq 1 ]] && [ "$branch" = "$current" ]; then
+                continue
+            fi
 
             # Fast forward from origin
             if [[ $1 -eq $S_FAST_FORWARD ]]; then
