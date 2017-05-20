@@ -1047,10 +1047,10 @@ where ${C_BLUE}<command>${C_OFF} is:
     ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before
     ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)
 
-If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed.
-
 where ${C_GREEN}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder
 of the workspace.
+
+If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed.
 "
     exit 1
 }
