@@ -1120,4 +1120,4 @@ case $1 in
         ;;
 esac
 
-# vim: fdm=marker
+# vim: fdm=marker ts=4 sts=4 sw=4 et
