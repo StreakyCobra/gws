@@ -204,6 +204,10 @@ This tool offers some functionalities, among which:
 
         $ gws
 
+  If you give the option `--hide-clean`, then projects that have at least one
+  remote and only clean branches will not be shown. This works for the commands
+  `fetch` and `ff` as well.
+
 * It can fetch the modifications from `origin` for all repositories, it is
   usefull te be sure to have the latest modifications, for instance before
   going to take the train with no internet connection:
