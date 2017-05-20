@@ -41,3 +41,41 @@ tools/q:
     master :                  Clean
 work/neuraltalk:
     master :                  Dirty (Untracked files) 
+tools/another:
+                              Clean [Local only repository]
+tools/coursera-dl:
+    master :                  Dirty (Uncommitted changes) 
+    mechanize :               Clean
+tools/emptyyyy:
+                              Clean [Local only repository]
+tools/peru:
+                              Missing repository 
+tools/q:
+    gh-pages :                Not in sync with origin/gh-pages
+    master :                  Clean
+work/docker-gitlab:
+    master :                  Not in sync with origin/master
+work/neuraltalk:
+    master :                  Dirty (Untracked files) 
+tools/q:
+    gh-pages :                Not in sync with origin/gh-pages
+    master :                  Clean
+tools/another:
+                              Clean [Local only repository]
+tools/coursera-dl:
+    master :                  Dirty (Uncommitted changes) 
+    mechanize :               Clean
+tools/emptyyyy:
+                              Clean [Local only repository]
+tools/peru:
+                              Missing repository 
+tools/q:
+    gh-pages :                Not in sync with origin/gh-pages
+    master :                  Clean
+work/docker-gitlab:
+    master :                  Not in sync with origin/master
+work/neuraltalk:
+    master :                  Dirty (Untracked files) 
+tools/q:
+    gh-pages :                Not in sync with origin/gh-pages
+    master :                  Clean

@@ -132,6 +132,9 @@ declare -a branches
 
 # }}}
 
+# Default values for command line options
+option_hide_clean=false
+
 # {{{ General functions
 
 # Check if an array contains a value
@@ -916,6 +919,8 @@ function cmd_status()
                 fi
             fi
 
+            printed=0
+
             # Check for not consistant branches
             git_check_branch_origin "$dir" "$branch";
 
@@ -928,6 +933,7 @@ function cmd_status()
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_RED}Not in sync with ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
+                printed=1
                 project_name_printed=1
 
             # If the remote doesn't exist
@@ -936,6 +942,7 @@ function cmd_status()
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_YELLOW}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
+                printed=1
                 project_name_printed=1
 
             # If there is no local hash (must never happen... but who knows?)
@@ -944,19 +951,24 @@ function cmd_status()
                 printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_RED}Internal error${C_OFF}"
                 uptodate=0
+                printed=1
                 project_name_printed=1
 
             # Otherwise
             else
-                print_project_name_unless_done_already "$dir" $project_name_printed
-                printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_GREEN}Clean${C_OFF}"
-                project_name_printed=1
-
+                if ! $option_hide_clean || [[ $printed -eq 1 ]] || [[ $project_name_printed -eq 1 ]]; then
+                    print_project_name_unless_done_already "$dir" $project_name_printed
+                    printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
+                    echo -en "${C_GREEN}Clean${C_OFF}"
+                    printed=1
+                    project_name_printed=1
+                fi
             fi
 
             # Print after informations
-            echo -en "${after}"
+            if [[ $printed -eq 1 ]]; then
+                echo -en "${after}"
+            fi
         done
     done
 
@@ -1070,6 +1082,7 @@ if [[ "$1" != "init" ]]; then
 fi
 
 command=status
+implicit_command=false
 # Identify the desired command
 case $1 in
     init|clone|update|status|fetch|ff|check)
@@ -1085,15 +1098,32 @@ case $1 in
         shift
         ;;
     *)
-        if [[ -n "$1" ]]; then
-            error_msg="${C_RED}The directory '$1' is not found and is not a recognized command.${C_OFF}"
-            projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
-            projects_indexes=( ${projects_list} )
-        fi
         command=status
+        implicit_command=true
 esac
 
-# If a path is specified as second argument, limit projects to the ones matching
+while [[ "$1" =~ ^- ]]; do
+    case "$1" in
+        --hide-clean)
+            option_hide_clean=true
+            ;;
+        *)
+            echo -e "${C_RED}Unknown option: $1${C_OFF}"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+if $implicit_command; then
+    if [[ -n "$1" ]]; then
+        error_msg="${C_RED}The directory '$1' is not found and is not a recognized command.${C_OFF}"
+        projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
+        projects_indexes=( ${projects_list} )
+    fi
+fi
+
+# If a path is specified as positional argument, limit projects to the ones matching
 # the path
 if [[ -n "$1" ]]; then
     # But don't error out in the case of "clone", becuase the directory will probably not exist

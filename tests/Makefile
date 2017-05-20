@@ -74,6 +74,12 @@ test_status:
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status | cat >> $(TEST_STATUS_OUTPUT)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status tools/q | cat >> $(TEST_STATUS_OUTPUT)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status work/neuraltalk | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) --hide-clean | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) --hide-clean tools/q | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) --hide-clean work/gws | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean tools/q | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean work/gws | cat >> $(TEST_STATUS_OUTPUT)
 	diff $(TEST_STATUS_EXPECTED) $(TEST_STATUS_OUTPUT)
 
 test_status_expectation: prepare
@@ -82,6 +88,12 @@ test_status_expectation: prepare
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status | cat >> $(TEST_STATUS_EXPECTED)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status tools/q | cat >> $(TEST_STATUS_EXPECTED)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status work/neuraltalk | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) --hide-clean | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) --hide-clean tools/q | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) --hide-clean work/gws | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean tools/q | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean work/gws | cat >> $(TEST_STATUS_EXPECTED)
 
 test_update:
 	rm -rf $(TEST_UPDATE_WORKSPACE)
