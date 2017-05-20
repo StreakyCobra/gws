@@ -1045,6 +1045,7 @@ function usage()
 
 # }}}
 
+
 # Except for the special case of "init" in which there is no project files
 if [[ "$1" != "init" ]]; then
     # First move to the first parent directory containing a projects file
@@ -1066,49 +1067,22 @@ if [[ "$1" != "init" ]]; then
         sed -i '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
         declare -p projects_indexes >> "${CACHE_FILE}"
     fi
-
-    # If a path is specified as second argument, limit projects to the ones matching
-    # the path
-    if [[ -n "$2" ]]; then
-        # But don't error out in the case of "clone", becuase the directory will probably not exist
-        if [[ "$1" != "clone" ]]; then
-            error_msg="${C_RED}The directory '$2' is not found.${C_OFF}"
-            projects_list=$(keep_prefixed_projects "$2") || (echo -e "$error_msg" && exit 1) || exit 1
-            projects_indexes=( ${projects_list} )
-        fi
-    fi
 fi
 
-
-# Finally select the desired command
+command=status
+# Identify the desired command
 case $1 in
-    "init")
-        cmd_init
-        ;;
-    "clone")
+    init|clone|update|status|fetch|ff|check)
+        command="$1"
         shift
-        cmd_clone "$@"
         ;;
-    "update")
-        cmd_update
+    --version|-v)
+        command=version
+        shift
         ;;
-    "status")
-        cmd_status $S_NONE
-        ;;
-    "fetch")
-        cmd_status $S_FETCH
-        ;;
-    "ff")
-        cmd_status $S_FAST_FORWARD
-        ;;
-    "check")
-        cmd_check
-        ;;
-    "--version"|"-v")
-        echo -e "gws version ${C_RED}$VERSION${C_OFF}"
-        ;;
-    "--help"|"-h")
-        usage
+    --help|-h)
+        command=help
+        shift
         ;;
     *)
         if [[ -n "$1" ]]; then
@@ -1116,7 +1090,48 @@ case $1 in
             projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
             projects_indexes=( ${projects_list} )
         fi
+        command=status
+esac
+
+# If a path is specified as second argument, limit projects to the ones matching
+# the path
+if [[ -n "$1" ]]; then
+    # But don't error out in the case of "clone", becuase the directory will probably not exist
+    if [[ "$command" != "clone" ]]; then
+        error_msg="${C_RED}The directory '$1' is not found.${C_OFF}"
+        projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
+        projects_indexes=( ${projects_list} )
+    fi
+fi
+
+# Finally execute the selected command
+case $command in
+    init)
+        cmd_init
+        ;;
+    clone)
+        cmd_clone "$@"
+        ;;
+    update)
+        cmd_update
+        ;;
+    status)
         cmd_status $S_NONE
+        ;;
+    fetch)
+        cmd_status $S_FETCH
+        ;;
+    ff)
+        cmd_status $S_FAST_FORWARD
+        ;;
+    check)
+        cmd_check
+        ;;
+    version)
+        echo -e "gws version ${C_RED}$VERSION${C_OFF}"
+        ;;
+    help)
+        usage
         ;;
 esac
 
