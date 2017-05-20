@@ -1033,25 +1033,25 @@ function cmd_check()
 # Display the usage of this program
 function usage()
 {
-    echo -e "gws is an helper to manage workspaces which contain git repositories."
-    echo -e ""
-    echo -e "Usages: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF} [${C_GREEN}<directory>${C_OFF}]"
-    echo -e "        ${C_RED}$(basename "$0")${C_OFF} [${C_GREEN}<directory>${C_OFF}]"
-    echo -e ""
-    echo -e "where ${C_BLUE}<command>${C_OFF} is:"
-    echo -e "    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list"
-    echo -e "    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list"
-    echo -e "    ${C_BLUE}clone${C_OFF}  - Selectively clone specific repositories from projects list"
-    echo -e "    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace"
-    echo -e "    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before"
-    echo -e "    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before"
-    echo -e "    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)"
-    echo -e ""
-    echo -e "If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed."
-    echo -e ""
-    echo -e "where ${C_GREEN}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder"
-    echo -e "of the workspace."
-    echo -e ""
+    echo -e "gws is an helper to manage workspaces which contain git repositories.
+
+Usages: ${C_RED}$(basename "$0")${C_OFF} ${C_BLUE}<command>${C_OFF} [${C_GREEN}<directory>${C_OFF}]
+        ${C_RED}$(basename "$0")${C_OFF} [${C_GREEN}<directory>${C_OFF}]
+
+where ${C_BLUE}<command>${C_OFF} is:
+    ${C_BLUE}init${C_OFF}   - Detect the repositories and create the projects list
+    ${C_BLUE}update${C_OFF} - Update the workspace to get new repositories from projects list
+    ${C_BLUE}clone${C_OFF}  - Selectively clone specific repositories from projects list
+    ${C_BLUE}status${C_OFF} - Print status for all repositories in the workspace
+    ${C_BLUE}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before
+    ${C_BLUE}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before
+    ${C_BLUE}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)
+
+If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed.
+
+where ${C_GREEN}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder
+of the workspace.
+"
     exit 1
 }
 
