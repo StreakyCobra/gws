@@ -1051,6 +1051,10 @@ where ${C_GREEN}<directory>${C_OFF} can be a path to limit the scope of the comm
 of the workspace.
 
 If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed.
+
+The commands ${C_BLUE}status${C_OFF}, ${C_BLUE}fetch${C_FETCH} and ${C_BLUE}ff${C_OFF} accept the option
+--hide-clean before the ${C_GREEN}<directory>${C_OFF}. If given, repositories with at least one remote where
+all branches are clean will not be shown.
 "
     exit 1
 }
