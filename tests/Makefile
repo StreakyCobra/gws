@@ -6,6 +6,9 @@ WORKSPACE=Workspace
 TEST_CLONE_WORKSPACE=$(WORKSPACE)_test_clone
 TEST_UPDATE_WORKSPACE=$(WORKSPACE)_test_update
 
+TEST_STATUS_OUTPUT=$(PWD)/tmp.test_status_output
+TEST_STATUS_EXPECTED=$(PWD)/test_status.expected.txt
+
 prepare:
 	$(MAKE) clean				# Clean existing folder
 	$(MAKE) $(WORKSPACE)			# Prepare the workspace
@@ -52,7 +55,7 @@ clean:
 
 .PHONY: tests perturbate test_project_gws test_status test_clone test_update test_check test_fetch test_ff clean
 
-tests: test_clone test_update
+tests: test_clone test_status test_update
 
 test_clone:
 	rm -rf $(TEST_CLONE_WORKSPACE)
@@ -64,6 +67,21 @@ test_clone:
 	test -d $(TEST_CLONE_WORKSPACE)/ignoring/gws
 	test ! -d $(TEST_CLONE_WORKSPACE)/gws
 	test -d $(TEST_CLONE_WORKSPACE)/gws2
+
+test_status:
+	rm -f $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status tools/q | cat >> $(TEST_STATUS_OUTPUT)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status work/neuraltalk | cat >> $(TEST_STATUS_OUTPUT)
+	diff $(TEST_STATUS_EXPECTED) $(TEST_STATUS_OUTPUT)
+
+test_status_expectation: prepare
+	rm -f $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status tools/q | cat >> $(TEST_STATUS_EXPECTED)
+	cd $(WORKSPACE) && $(GWS_SCRIPT) status work/neuraltalk | cat >> $(TEST_STATUS_EXPECTED)
 
 test_update:
 	rm -rf $(TEST_UPDATE_WORKSPACE)
