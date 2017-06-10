@@ -190,6 +190,9 @@ This tool offers some functionalities, among which:
 
         $ gws update
 
+  `update` accepts the `--hide-clean` option. If present, repos that have at
+  least one remote and are unaffected by the update will not be printed.
+
 * It can also clone a specified selection of non-existing repositories from the
   projects list, if you don't need all of them right now.
 
@@ -204,9 +207,8 @@ This tool offers some functionalities, among which:
 
         $ gws
 
-  If you give the option `--hide-clean`, then projects that have at least one
-  remote and only clean branches will not be shown. This works for the commands
-  `fetch` and `ff` as well.
+  `gws status` and `gws` accept the `--hide-clean` option. If present, repos
+  that have at least one remote and only clean branches will not be shown.
 
 * It can fetch the modifications from `origin` for all repositories, it is
   usefull te be sure to have the latest modifications, for instance before
@@ -214,11 +216,17 @@ This tool offers some functionalities, among which:
 
         $ gws fetch
 
+  `fetch` accepts the `--hide-clean` option, which has the same effect as for
+  `status`.
+
 * It can also (for the same reasons) pull the modifications from origin for
   all repositories (but fast-forward only). Syntactic sugar to avoid a `gws
   fetch` and then many merges:
 
         $ gws ff    # Mnemonic: ff=fast-forward
+
+  `ff` accepts the `--hide-clean` option, which has the same effect as for
+  `status`.
 
 * It can check the workspace for all repositories (known, unknown, ignored,
   missing). Note: This command can be quite slow in large repositories (e.g.

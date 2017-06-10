@@ -1,7 +1,7 @@
 0.1.11
 ======
 
-* Add `--hide-clean` option for commands `status`, `fetch` and `ff`
+* Add `--hide-clean` option for commands `status`, `fetch`, `ff` and `update`
 
 
 0.1.10
