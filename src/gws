@@ -708,25 +708,45 @@ function cmd_clone()
         repo=$(get_repo_url "${projects[$dir]}")
 
         # Print the repository
-        echo -e "${C_BLUE}$dir${C_OFF}:"
+        local project_name_printed=0
+        local after=""
+
+        # Print information for local only repositories
+        if [[ -z $repo ]]; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
+            project_name_printed=1
+            after="${C_BLUE}[Local only repository]${C_OFF}"
+            skip_clone=1
+        fi
 
         # Check if repository already exists, and continue if it is the case
         if [ -d "$dir" ]; then
-            # Print the information
-            printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+            if ! $option_hide_clean || [[ -n "$after" ]]; then
+                # Print the information
+                print_project_name_unless_done_already "$dir" $project_name_printed
+                project_name_printed=1
+                printf "${INDENT}%-${MBL}s${C_GREEN} %s${C_OFF} " " " "Already exists"
+                skip_clone=1
+            fi
         elif [[ -z $repo ]]; then
             # Print the information
+            print_project_name_unless_done_already "$dir" $project_name_printed
+            project_name_printed=1
             printf "${INDENT}%-${MBL}s${C_RED} %s${C_OFF} " " " "No URL defined"
+            skip_clone=1
         fi
 
-        # Print information for local only repositories
-        [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}" && continue
-
-        # Finish the newline
-        printf "\n"
+        if [[ $project_name_printed -eq 1 ]] || [[ -n "$after" ]]; then
+            printf "$after\n"
+        fi
+        if [[ $skip_clone -eq 1 ]]; then
+            continue
+        fi
 
         # Next repository if already existing
         if [[ ! -d "$dir" ]]; then
+            print_project_name_unless_done_already "$dir" $project_name_printed
+            project_name_printed=1
 
             # Print the information
             printf "${INDENT}%-${MBL}s${C_CYAN} %s${C_OFF}\n" " " "Cloning…"
