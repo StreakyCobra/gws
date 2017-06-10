@@ -68,7 +68,7 @@ test_clone:
 	test ! -d $(TEST_CLONE_WORKSPACE)/gws
 	test -d $(TEST_CLONE_WORKSPACE)/gws2
 
-test_status:
+test_status: prepare
 	rm -f $(TEST_STATUS_OUTPUT)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) | cat >> $(TEST_STATUS_OUTPUT)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status | cat >> $(TEST_STATUS_OUTPUT)
@@ -80,7 +80,7 @@ test_status:
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean | cat >> $(TEST_STATUS_OUTPUT)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean tools/q | cat >> $(TEST_STATUS_OUTPUT)
 	cd $(WORKSPACE) && $(GWS_SCRIPT) status --hide-clean work/gws | cat >> $(TEST_STATUS_OUTPUT)
-	diff $(TEST_STATUS_EXPECTED) $(TEST_STATUS_OUTPUT)
+	git diff --no-index $(TEST_STATUS_EXPECTED) $(TEST_STATUS_OUTPUT)
 
 test_status_expectation: prepare
 	rm -f $(TEST_STATUS_EXPECTED)
