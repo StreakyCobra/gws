@@ -956,7 +956,7 @@ function cmd_status()
 
             # Otherwise
             else
-                if ! $option_hide_clean || [[ $printed -eq 1 ]] || [[ $project_name_printed -eq 1 ]]; then
+                if ! $option_hide_clean || [[ $printed -eq 1 ]] || [[ $project_name_printed -eq 1 ]] || [[ "$after" != "\n" ]]; then
                     print_project_name_unless_done_already "$dir" $project_name_printed
                     printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                     echo -en "${C_GREEN}Clean${C_OFF}"
