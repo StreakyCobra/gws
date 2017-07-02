@@ -16,5 +16,7 @@ tools/q:
                               Known
 work/docker-gitlab:
                               Known
+work/gws:
+                              Known
 work/neuraltalk:
                               Known
