@@ -133,7 +133,7 @@ declare -a branches
 # }}}
 
 # Default values for command line options
-option_hide_clean=false
+option_only_changes=false
 
 # {{{ General functions
 
@@ -721,7 +721,7 @@ function cmd_clone()
 
         # Check if repository already exists, and continue if it is the case
         if [ -d "$dir" ]; then
-            if ! $option_hide_clean || [[ -n "$after" ]]; then
+            if ! $option_only_changes || [[ -n "$after" ]]; then
                 # Print the information
                 print_project_name_unless_done_already "$dir" $project_name_printed
                 project_name_printed=1
@@ -818,7 +818,7 @@ function cmd_status()
 
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
-            if ! $option_hide_clean; then
+            if ! $option_only_changes; then
               print_project_name_unless_done_already "$dir" $project_name_printed
               printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
               [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}"
@@ -978,7 +978,7 @@ function cmd_status()
 
             # Otherwise
             else
-                if ! $option_hide_clean || [[ $printed -eq 1 ]] || [[ $project_name_printed -eq 1 ]] || [[ "$after" != "\n" ]]; then
+                if ! $option_only_changes || [[ $printed -eq 1 ]] || [[ $project_name_printed -eq 1 ]] || [[ "$after" != "\n" ]]; then
                     print_project_name_unless_done_already "$dir" $project_name_printed
                     printf "${INDENT}${C_MAGENTA}%-${MBL}s${C_OFF} " "$display_branch :"
                     echo -en "${C_GREEN}Clean${C_OFF}"
@@ -1075,8 +1075,7 @@ of the workspace.
 If no ${C_BLUE}<command>${C_OFF} is specified, the command ${C_BLUE}status${C_OFF} is assumed.
 
 The commands ${C_BLUE}status${C_OFF}, ${C_BLUE}fetch${C_FETCH} and ${C_BLUE}ff${C_OFF} accept the option
---hide-clean before the ${C_GREEN}<directory>${C_OFF}. If given, repositories with at least one remote where
-all branches are clean will not be shown.
+--only-changes before the ${C_GREEN}<directory>${C_OFF}. If given, only repositories with changes will be shown.
 "
     exit 1
 }
@@ -1130,8 +1129,8 @@ esac
 
 while [[ "$1" =~ ^- ]]; do
     case "$1" in
-        --hide-clean)
-            option_hide_clean=true
+        --only-changes)
+            option_only_changes=true
             ;;
         *)
             echo -e "${C_RED}Unknown option: $1${C_OFF}"
