@@ -818,12 +818,14 @@ function cmd_status()
 
         # Check if repository already exists, and continue if it is not the case
         if [ ! -d "$dir" ]; then
-            print_project_name_unless_done_already "$dir" $project_name_printed
-            printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
-            [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}"
-            printf "\n"
+            if ! $option_hide_clean; then
+              print_project_name_unless_done_already "$dir" $project_name_printed
+              printf "${INDENT}%-${MBL}s${C_YELLOW} %s${C_OFF} " " " "Missing repository"
+              [[ -z $repo ]] && echo -e "${C_BLUE}[Local only repository]${C_OFF}"
+              printf "\n"
+              project_name_printed=1
+            fi
             uptodate=0
-            project_name_printed=1
             continue
         fi
 

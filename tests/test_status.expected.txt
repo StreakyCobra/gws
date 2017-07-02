@@ -48,8 +48,6 @@ tools/coursera-dl:
     mechanize :               Clean
 tools/emptyyyy:
                               Clean [Local only repository]
-tools/peru:
-                              Missing repository 
 tools/q:
     gh-pages :                Not in sync with origin/gh-pages
     master :                  Clean
@@ -67,8 +65,6 @@ tools/coursera-dl:
     mechanize :               Clean
 tools/emptyyyy:
                               Clean [Local only repository]
-tools/peru:
-                              Missing repository 
 tools/q:
     gh-pages :                Not in sync with origin/gh-pages
     master :                  Clean

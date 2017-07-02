@@ -207,8 +207,9 @@ This tool offers some functionalities, among which:
 
         $ gws
 
-  `gws status` and `gws` accept the `--hide-clean` option. If present, repos
-  that have at least one remote and only clean branches will not be shown.
+  `gws status` and `gws` accept the `--hide-clean` option. If present, missing
+  repos as well as repos that have at least one remote and only clean branches
+  will not be shown.
 
 * It can fetch the modifications from `origin` for all repositories, it is
   usefull te be sure to have the latest modifications, for instance before
