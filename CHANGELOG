@@ -2,6 +2,7 @@
 ======
 
 * Add `--only-changes` option for commands `status`, `fetch`, `ff` and `update`
+* Command `check` now detects nested repositories
 
 
 0.1.10
