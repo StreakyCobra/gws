@@ -1,3 +1,9 @@
+0.1.11
+======
+
+* Add `--only-changes` option for commands `status`, `fetch`, `ff` and `update`
+
+
 0.1.10
 =====
 
