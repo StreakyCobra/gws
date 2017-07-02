@@ -6,6 +6,9 @@ WORKSPACE=Workspace
 TEST_CLONE_WORKSPACE=$(WORKSPACE)_test_clone
 TEST_UPDATE_WORKSPACE=$(WORKSPACE)_test_update
 
+TEST_CHECK_OUTPUT=$(PWD)/tmp.test_check_output
+TEST_CHECK_EXPECTED=$(PWD)/test_check.expected.txt
+
 prepare:
 	$(MAKE) clean				# Clean existing folder
 	$(MAKE) $(WORKSPACE)			# Prepare the workspace
@@ -42,16 +45,25 @@ $(WORKSPACE)/.project.gws: $(WORKSPACE)
 perturbate:
 	cd $(WORKSPACE)/work/neuraltalk; touch test
 	cd $(WORKSPACE)/work/docker-gitlab; git checkout master; git reset --hard HEAD^
-	cd $(WORKSPACE)/tools/q; touch test; git add test; git commit -m message
+	cd $(WORKSPACE)/tools/q; echo 'testfile' > testfile; git add testfile; git commit -m message
 	cd $(WORKSPACE)/tools; rm -rf peru
 	cd $(WORKSPACE)/tools/coursera-dl; touch test; git add test
+	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/nested-gws
+	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/nested-gws/nested-gws
 
 clean:
 	rm -rf $(WORKSPACE) $(TEST_CLONE_WORKSPACE) $(TEST_UPDATE_WORKSPACE)
 
 .PHONY: tests perturbate test_project_gws test_status test_clone test_update test_check test_fetch test_ff clean
 
-tests: test_clone test_update
+tests: $(WORKSPACE)/.project.gws perturbate test_check test_clone test_update
+
+test_check:
+	cd $(WORKSPACE); $(GWS_SCRIPT) check > $(TEST_CHECK_OUTPUT)
+	git diff --no-index $(TEST_CHECK_EXPECTED) $(TEST_CHECK_OUTPUT)
+
+test_check_expectation: $(WORKSPACE)/.project.gws perturbate
+	cd $(WORKSPACE); $(GWS_SCRIPT) check > $(TEST_CHECK_EXPECTED)
 
 test_clone:
 	rm -rf $(TEST_CLONE_WORKSPACE)
