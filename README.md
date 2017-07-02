@@ -190,6 +190,9 @@ This tool offers some functionalities, among which:
 
         $ gws update
 
+  `update` accepts the `--only-changes` option. If present, repos that have at
+  least one remote and are unaffected by the update will not be printed.
+
 * It can also clone a specified selection of non-existing repositories from the
   projects list, if you don't need all of them right now.
 
@@ -204,17 +207,27 @@ This tool offers some functionalities, among which:
 
         $ gws
 
+  `gws status` and `gws` accept the `--only-changes` option. If present, missing
+  repos as well as repos that have at least one remote and only clean branches
+  will not be shown.
+
 * It can fetch the modifications from `origin` for all repositories, it is
   usefull te be sure to have the latest modifications, for instance before
   going to take the train with no internet connection:
 
         $ gws fetch
 
+  `fetch` accepts the `--only-changes` option, which has the same effect as for
+  `status`.
+
 * It can also (for the same reasons) pull the modifications from origin for
   all repositories (but fast-forward only). Syntactic sugar to avoid a `gws
   fetch` and then many merges:
 
         $ gws ff    # Mnemonic: ff=fast-forward
+
+  `ff` accepts the `--only-changes` option, which has the same effect as for
+  `status`.
 
 * It can check the workspace for all repositories (known, unknown, ignored,
   missing). Note: This command can be quite slow in large repositories (e.g.
@@ -308,6 +321,12 @@ other more maintainable language.
 written in OCaml! I'll let you know if the project maturate! In any case this
 project will stay here for users who want something simple and portable.
 
+Maintainers
+-----------
+
+The project is currently maintained by Emil Lundberg (emlun), after having been
+started by Fabien Dubosson (StreakyCobra).
+
 Contributors
 ------------
 
@@ -317,4 +336,3 @@ Many thanks to these people for contributions:
 - Blount
 - Alex Sanchez
 - Antoine Belvire
-- Emil Lundberg

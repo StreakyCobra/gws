@@ -1,0 +1,20 @@
+ignoring/gws:
+                              Known
+nested-gws:
+                              Unknown
+nested-gws/nested-gws:
+                              Unknown
+tools/another:
+                              Known
+tools/coursera-dl:
+                              Known
+tools/emptyyyy:
+                              Known
+tools/peru:
+                              Missing
+tools/q:
+                              Known
+work/docker-gitlab:
+                              Known
+work/neuraltalk:
+                              Known
