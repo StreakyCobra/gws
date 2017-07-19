@@ -1,5 +1,5 @@
 ignoring/gws:
-                              Known
+                              Ignored
 nested-gws:
                               Unknown
 nested-gws/nested-gws:
