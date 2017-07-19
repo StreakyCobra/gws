@@ -124,3 +124,5 @@ test_update:
 	test ! -d $(TEST_UPDATE_WORKSPACE)/ignoring/gws
 	test -d $(TEST_UPDATE_WORKSPACE)/gws
 	test -d $(TEST_UPDATE_WORKSPACE)/gws2
+	test ! -d $(TEST_UPDATE_WORKSPACE)/gws3
+	test -d $(TEST_UPDATE_WORKSPACE)/gws4

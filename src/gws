@@ -751,6 +751,7 @@ function cmd_clone()
         # Print the repository
         local project_name_printed=0
         local after=""
+        local skip_clone=0
 
         # Print information for local only repositories
         if [[ -z $repo ]]; then
