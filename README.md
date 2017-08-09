@@ -336,3 +336,6 @@ Many thanks to these people for contributions:
 - Blount
 - Alex Sanchez
 - Antoine Belvire
+- Pascal Obry
+- Thomas Pérennou
+- Emil Lundberg

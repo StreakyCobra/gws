@@ -38,6 +38,8 @@ $(WORKSPACE):
 	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/ignoring/gws
 	git clone https://github.com/StreakyCobra/gws $(WORKSPACE)/work/gws
 	cd $(WORKSPACE)/ignoring/gws; git checkout develop
+	git init $(WORKSPACE)/prefix/foo
+	git init $(WORKSPACE)/prefix/foo-bar
 
 $(WORKSPACE)/.ignore.gws: $(WORKSPACE)
 	echo "^ignoring/" > $@
