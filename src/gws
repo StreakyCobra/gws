@@ -716,6 +716,7 @@ function cmd_init()
     # Create the list of repositories
     output=$(for dir in "${found[@]}"
     do
+        dir="${dir%/}"
         echo -n "$dir | $(git_remote_url "$dir" "${GIT_ORIGIN}")"
         for remote in $(git_remotes "$dir");
         do
