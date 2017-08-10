@@ -4,6 +4,10 @@ nested-gws:
                               Unknown
 nested-gws/nested-gws:
                               Unknown
+prefix/foo:
+                              Known
+prefix/foo-bar:
+                              Known
 tools/another:
                               Known
 tools/coursera-dl:
