@@ -13,9 +13,11 @@ TEST_CHECK_EXPECTED=$(PWD)/test_check.expected.txt
 TEST_STATUS_OUTPUT=$(PWD)/tmp.test_status_output
 TEST_STATUS_EXPECTED=$(PWD)/test_status.expected.txt
 
-prepare:
-	$(MAKE) clean				# Clean existing folder
+$(CLONE_SOURCE):
 	git clone https://github.com/StreakyCobra/gws $(CLONE_SOURCE)
+
+prepare: $(CLONE_SOURCE)
+	$(MAKE) clean				# Clean existing folder
 	git -C $(CLONE_SOURCE) checkout develop
 	git -C $(CLONE_SOURCE) checkout gh-pages
 	git -C $(CLONE_SOURCE) checkout master
@@ -63,7 +65,11 @@ perturbate:
 	git clone $(CLONE_SOURCE) $(WORKSPACE)/nested-gws/nested-gws
 
 clean:
-	rm -rf $(WORKSPACE) $(TEST_CLONE_WORKSPACE) $(TEST_UPDATE_WORKSPACE) $(CLONE_SOURCE)
+	rm -rf $(WORKSPACE) $(TEST_CLONE_WORKSPACE) $(TEST_UPDATE_WORKSPACE)
+
+reclone:
+	rm -rf $(CLONE_SOURCE)
+
 
 .PHONY: tests perturbate test_project_gws test_status test_clone test_update test_check test_fetch test_ff clean
 
