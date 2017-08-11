@@ -105,23 +105,27 @@ S_NONE=0
 S_FETCH=1
 S_FAST_FORWARD=2
 
-# Printing in color.
-if [[ -t 1 ]]; then
-    C_ERROR="\e[91m"
-    C_NOT_SYNC="\e[91m"
-    C_VERSION="\e[91m"
-    C_HELP_PROGNAME="\e[91m"
-    C_CLEAN="\e[92m"
-    C_HELP_DIR="\e[92m"
-    C_NO_REMOTE="\e[93m"
-    C_REPO="\e[94m"
-    C_BRANCH="\e[95m"
-    C_LOGS="\e[96m"
-    C_OFF="\e[0m"
+# Default colors
+C_ERROR="\e[91m"
+C_NOT_SYNC="\e[91m"
+C_VERSION="\e[91m"
+C_HELP_PROGNAME="\e[91m"
+C_CLEAN="\e[92m"
+C_HELP_DIR="\e[92m"
+C_NO_REMOTE="\e[93m"
+C_REPO="\e[94m"
+C_BRANCH="\e[95m"
+C_LOGS="\e[96m"
+C_OFF="\e[0m"
+
+function read_theme() {
+  # Printing in color.
+  if [[ -t 1 ]]; then
     if [[ -e "$THEME_FILE" ]]; then
       source "$THEME_FILE";
     fi
-else
+  else
+    # Disable colors if standard out is not a terminal
     C_ERROR=""
     C_NOT_SYNC=""
     C_VERSION=""
@@ -133,7 +137,8 @@ else
     C_BRANCH=""
     C_LOGS=""
     C_OFF=""
-fi
+  fi
+}
 
 
 #-------------------------------------------------------------------------------
@@ -1130,6 +1135,8 @@ if [[ "$1" != "init" ]]; then
     do
         cd ..
     done
+
+    read_theme
 
     # Read the cache if existing, create it if not existing.
     touch "${CACHE_FILE}"
