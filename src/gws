@@ -114,8 +114,8 @@ if [[ -t 1 ]]; then
     C_BRANCH="\e[95m"
     C_LOGS="\e[96m"
     C_OFF="\e[0m"
-    if [[ -e $THEME_FILE ]]; then
-      source .theme.gws;
+    if [[ -e "$THEME_FILE" ]]; then
+      source "$THEME_FILE";
     fi
 else
     C_NOT_SYNC=""
