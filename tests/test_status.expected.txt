@@ -1,3 +1,7 @@
+prefix/foo:
+                              Clean [Local only repository]
+prefix/foo-bar:
+                              Clean [Local only repository]
 tools/another:
                               Clean [Local only repository]
 tools/coursera-dl:
@@ -16,6 +20,10 @@ work/gws:
     master :                  Clean
 work/neuraltalk:
     master :                  Dirty (Untracked files) 
+prefix/foo:
+                              Clean [Local only repository]
+prefix/foo-bar:
+                              Clean [Local only repository]
 tools/another:
                               Clean [Local only repository]
 tools/coursera-dl:
@@ -39,6 +47,10 @@ tools/q:
     master :                  Clean
 work/neuraltalk:
     master :                  Dirty (Untracked files) 
+prefix/foo:
+                              Clean [Local only repository]
+prefix/foo-bar:
+                              Clean [Local only repository]
 tools/another:
                               Clean [Local only repository]
 tools/coursera-dl:
@@ -55,6 +67,10 @@ work/neuraltalk:
 tools/q:
     gh-pages :                Not in sync with origin/gh-pages
     master :                  Clean
+prefix/foo:
+                              Clean [Local only repository]
+prefix/foo-bar:
+                              Clean [Local only repository]
 tools/another:
                               Clean [Local only repository]
 tools/coursera-dl:
