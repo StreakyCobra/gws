@@ -1,15 +1,18 @@
+BASEDIR=../..
+
 CURRENT_MAKEFILE=$(MAKEFILE_LIST)
-GIT_CHECK=$(shell { [ -f .git/config ] && [ -x "$$(which git)" ]; } || echo git)
+GIT_CHECK=$(shell { [ -f $(BASEDIR)/.git/config ] && [ -x "$$(which git)" ]; } || echo git)
 
 # Configuration section
 ifneq ($(wildcard config.mk),)
 include config.mk
 endif
-PREFIX?=/usr/local
+INSTALLROOT?=
+PREFIX?=$(INSTALLROOT)/usr/local
 BIN?=$(PREFIX)/bin
 DOC?=$(PREFIX)/share/doc/gws
-BASH_COMPLETION?=/etc/bash_completion.d
-ZSH_COMPLETION?=/usr/share/zsh/vendor-completions
+BASH_COMPLETION?=$(INSTALLROOT)/etc/bash_completion.d
+ZSH_COMPLETION?=$(INSTALLROOT)/usr/share/zsh/vendor-completions
 ifeq (,$(GIT_CHECK))
 MAINTAINER?=$(shell git log -1 --format='%an <%ae>' -- $(CURRENT_MAKEFILE))
 endif
@@ -51,6 +54,7 @@ ifeq (,$(VERSION))
 endif
 endif
 	@echo Install version: $(VERSION)
+	@echo Installing to: $(INSTALLROOT)
 
 uninstall:
 	rm -f $(INSTALL)
@@ -61,31 +65,32 @@ debian: pre.package.check $(PACKAGE)_all.deb
 endif
 
 test:
-	$(MAKE) --directory=tests
+	echo "BASEDIR: $(BASEDIR)"
+	$(MAKE) --directory=$(BASEDIR)/tests tests
 
 clean:
-	$(MAKE) --directory=tests clean
+	$(MAKE) --directory=$(BASEDIR)/tests clean
 	rm -rf gws_*
 
 $(DIRECTORIES):
 	@[ -d $@ ] || mkdir --parent $@
 
-$(BIN)/gws: src/gws $(BIN)
+$(BIN)/gws: $(BASEDIR)/src/gws $(BIN)
 	cp $< $@
 
-$(DOC)/changelog.gz: CHANGELOG $(DOC)
+$(DOC)/changelog.gz: $(BASEDIR)/CHANGELOG $(DOC)
 	gzip -c $< > $@
 
-$(DOC)/license: LICENSE $(DOC)
+$(DOC)/license: $(BASEDIR)/LICENSE $(DOC)
 	cp $< $@
 
-$(DOC)/readme.md.gz: README.md $(DOC)
+$(DOC)/readme.md.gz: $(BASEDIR)/README.md $(DOC)
 	gzip -c $< > $@
 
-$(ZSH_COMPLETION)/_gws: completions/zsh $(ZSH_COMPLETION)
+$(ZSH_COMPLETION)/_gws: $(BASEDIR)/completions/zsh $(ZSH_COMPLETION)
 	cp $< $@
 
-$(BASH_COMPLETION)/gws: completions/bash $(BASH_COMPLETION)
+$(BASH_COMPLETION)/gws: $(BASEDIR)/completions/bash $(BASH_COMPLETION)
 	cp $< $@
 
 $(PACKAGE)/DEBIAN/./control: debian/$(DEBIAN_FILES)
