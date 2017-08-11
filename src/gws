@@ -112,6 +112,7 @@ if [[ -t 1 ]]; then
     C_VERSION="\e[91m"
     C_HELP_PROGNAME="\e[91m"
     C_CLEAN="\e[92m"
+    C_HELP_DIR="\e[92m"
     C_NO_REMOTE="\e[93m"
     C_REPO="\e[94m"
     C_BRANCH="\e[95m"
@@ -126,6 +127,7 @@ else
     C_VERSION=""
     C_HELP_PROGNAME=""
     C_CLEAN=""
+    C_HELP_DIR=""
     C_NO_REMOTE=""
     C_REPO=""
     C_BRANCH=""
@@ -736,7 +738,7 @@ function cmd_clone()
     local dir repo remote remote_name remote_url
 
     if [[ -z "$1" ]]; then
-        echo -e "Usage: ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} ${C_REPO}clone${C_OFF} ${C_CLEAN}<directory>...${C_OFF}"
+        echo -e "Usage: ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} ${C_REPO}clone${C_OFF} ${C_HELP_DIR}<directory>...${C_OFF}"
         return 1
     fi
 
@@ -1096,8 +1098,8 @@ function usage()
 {
     echo -e "gws is an helper to manage workspaces which contain git repositories.
 
-Usages: ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} ${C_REPO}<command>${C_OFF} [${C_CLEAN}<directory>${C_OFF}]
-        ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} [${C_CLEAN}<directory>${C_OFF}]
+Usages: ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} ${C_REPO}<command>${C_OFF} [${C_HELP_DIR}<directory>${C_OFF}]
+        ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} [${C_HELP_DIR}<directory>${C_OFF}]
 
 where ${C_REPO}<command>${C_OFF} is:
     ${C_REPO}init${C_OFF}   - Detect the repositories and create the projects list
@@ -1108,13 +1110,13 @@ where ${C_REPO}<command>${C_OFF} is:
     ${C_REPO}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before
     ${C_REPO}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)
 
-where ${C_CLEAN}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder
+where ${C_HELP_DIR}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder
 of the workspace.
 
 If no ${C_REPO}<command>${C_OFF} is specified, the command ${C_REPO}status${C_OFF} is assumed.
 
 The commands ${C_REPO}status${C_OFF}, ${C_REPO}fetch${C_OFF} and ${C_REPO}ff${C_OFF} accept the option
---only-changes before the ${C_CLEAN}<directory>${C_OFF}. If given, only repositories with changes will be shown.
+--only-changes before the ${C_HELP_DIR}<directory>${C_OFF}. If given, only repositories with changes will be shown.
 "
     exit 1
 }
