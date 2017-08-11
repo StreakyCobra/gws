@@ -1,0 +1,30 @@
+#!/bin/sh
+
+TEST_DIR=$(pwd)
+GWS="$(pwd)/../src/gws"
+TMP_DIR=$(mktemp -d --tmpdir gws-test.XXXXXXXXXX)
+CLONE_SOURCE="${TMP_DIR}/test-repo"
+WORKSPACE="${TMP_DIR}/workspace"
+
+mktemp_workspace() {
+  mktemp -d --tmpdir="$TMP_DIR" "$1".XXXX
+}
+
+oneTimeSetUp() {
+  echo "Running oneTimeSetUp..."
+  git clone --no-single-branch --depth 3 https://github.com/StreakyCobra/gws "$CLONE_SOURCE" &>/dev/null
+  git -C "$CLONE_SOURCE" checkout develop &>/dev/null
+  git -C "$CLONE_SOURCE" checkout gh-pages &>/dev/null
+  git -C "$CLONE_SOURCE" checkout master &>/dev/null
+  echo "oneTimeSetUp done."
+}
+
+oneTimeTearDown() {
+  rm -rf $TMP_DIR
+}
+
+
+source ./cmd_status.sh
+
+cd "$TEST_DIR"
+source ../lib/shunit2/source/2.1/src/shunit2

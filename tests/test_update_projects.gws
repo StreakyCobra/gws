@@ -1,3 +1,5 @@
-ignoring/gws | https://github.com/StreakyCobra/gws
-gws | https://github.com/StreakyCobra/gws
-gws2 | https://github.com/StreakyCobra/gws
+ignoring/gws | ../test-repo
+gws | ../test-repo
+gws2 | ../test-repo
+gws3 |
+gws4 | ../test-repo
