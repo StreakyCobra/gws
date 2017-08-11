@@ -286,6 +286,30 @@ projects name. Some examples:
 This function is really usefull for ignoring locally some projects that are not
 needed nor accessible.
 
+
+### Theme file
+
+You can customise the color scheme by placing a shell script at one of the
+following locations:
+
+ 1. `./.git/theme.gws`
+ 2. `${HOME}/.theme.gws`
+ 3. `${HOME}/.config/gws/theme`
+
+The first existing file in the above order, if any, will be `source`d into the
+main `gws` script if standard output is a terminal. In the theme script you can
+redefine the color codes set as `C_*` near the beginning of the main script.
+
+> -Why can't I put this in the projects directory with `.projects.gws` and
+  `.ignore.gws`?
+
+Because then if you sync your `.projects.gws` via git you could inadvertently
+pull a commit that writes a theme file containing arbitrary shell code, which
+`gws` would then blindly run. You're still owned in other ways if an attacker
+has arbitrary write access in your home directory, but this way the write can't
+be done remotely over git.
+
+
 Other thoughts
 --------------
 
