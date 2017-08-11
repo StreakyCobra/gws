@@ -54,7 +54,6 @@ ifeq (,$(VERSION))
 endif
 endif
 	@echo Install version: $(VERSION)
-	@echo Installing to: $(INSTALLROOT)
 
 uninstall:
 	rm -f $(INSTALL)
