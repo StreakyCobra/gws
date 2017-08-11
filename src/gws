@@ -73,7 +73,11 @@ IGNORE_FILE=".ignore.gws"
 CACHE_FILE=".cache.gws"
 
 # Name of the file overriding common colors definition
-THEME_FILE=".theme.gws"
+THEME_FILE_PATH=(
+  ".git/theme.gws"
+  "${HOME}/.theme.gws"
+  "${HOME}/.config/gws/theme"
+)
 
 # Field separator in the projects list.
 FIELD_SEP='|'
@@ -121,9 +125,14 @@ C_OFF="\e[0m"
 function read_theme() {
   # Printing in color.
   if [[ -t 1 ]]; then
-    if [[ -e "$THEME_FILE" ]]; then
-      source "$THEME_FILE";
-    fi
+    for theme_file in "${THEME_FILE_PATH[@]}"; do
+      echo "Trying $theme_file"
+      if [[ -e "$theme_file" ]]; then
+        echo "Found $theme_file"
+        source "$theme_file"
+        break
+      fi
+    done
   else
     # Disable colors if standard out is not a terminal
     C_ERROR=""

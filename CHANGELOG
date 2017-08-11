@@ -2,8 +2,7 @@
 ======
 
 * New features:
-  - Add support for custom color themes via a `.theme.gws` script in the
-    root projects directory
+  - Add support for custom color themes
 
 * Bug fixes:
   - Unset CDPATH to avoid unwanted output (#18)
