@@ -1,5 +1,5 @@
 # Where the gws script is located
-GWS_SCRIPT=$(PWD)/../src/gws
+GWS_SCRIPT=$(abspath $(dir $(MAKEFILE_LIST)))/../src/gws
 
 CLONE_SOURCE=test-repo
 
@@ -8,10 +8,10 @@ WORKSPACE=Workspace
 TEST_CLONE_WORKSPACE=$(WORKSPACE)_test_clone
 TEST_UPDATE_WORKSPACE=$(WORKSPACE)_test_update
 
-TEST_CHECK_OUTPUT=$(PWD)/tmp.test_check_output
-TEST_CHECK_EXPECTED=$(PWD)/test_check.expected.txt
-TEST_STATUS_OUTPUT=$(PWD)/tmp.test_status_output
-TEST_STATUS_EXPECTED=$(PWD)/test_status.expected.txt
+TEST_CHECK_OUTPUT=$(CURDIR)/tmp.test_check_output
+TEST_CHECK_EXPECTED=$(CURDIR)/test_check.expected.txt
+TEST_STATUS_OUTPUT=$(CURDIR)/tmp.test_status_output
+TEST_STATUS_EXPECTED=$(CURDIR)/test_status.expected.txt
 
 $(CLONE_SOURCE):
 	git clone https://github.com/StreakyCobra/gws $(CLONE_SOURCE)
