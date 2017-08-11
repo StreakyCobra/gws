@@ -594,7 +594,7 @@ function git_branch()
     local cmd
 
     # Git command to execute
-    cmd=( "git" "branch" )
+    cmd=( "git" "branch" "--no-color" )
 
     # Run the command and print the output
     (cd "$1" && "${cmd[@]}" | grep "*" | cut -d'*' -f 2 | tr -d ' ')
@@ -608,7 +608,7 @@ function git_branches()
     local cmd output
 
     # Git command to execute
-    cmd=( "git" "branch" )
+    cmd=( "git" "branch" "--no-color" )
 
     # Run the command and get the output
     output=$(cd "$1" && "${cmd[@]}" | cut -d'*' -f 2 | tr -d ' ')
