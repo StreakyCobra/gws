@@ -126,9 +126,7 @@ function read_theme() {
   # Printing in color.
   if [[ -t 1 ]]; then
     for theme_file in "${THEME_FILE_PATH[@]}"; do
-      echo "Trying $theme_file"
       if [[ -e "$theme_file" ]]; then
-        echo "Found $theme_file"
         source "$theme_file"
         break
       fi

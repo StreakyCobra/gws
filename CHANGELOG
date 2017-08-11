@@ -1,3 +1,10 @@
+0.1.13
+======
+
+* Bug fixes:
+  - Remove theme file location debug output
+
+
 0.1.12
 ======
 
