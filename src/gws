@@ -1215,7 +1215,7 @@ case $command in
     check)
         cmd_check
         ;;
-    "--version"|"-v")
+    version)
         echo -e "gws version ${C_NOT_SYNC}$VERSION${C_OFF}"
         ;;
     help)
