@@ -109,6 +109,8 @@ S_FAST_FORWARD=2
 if [[ -t 1 ]]; then
     C_ERROR="\e[91m"
     C_NOT_SYNC="\e[91m"
+    C_VERSION="\e[91m"
+    C_HELP_PROGNAME="\e[91m"
     C_CLEAN="\e[92m"
     C_NO_REMOTE="\e[93m"
     C_REPO="\e[94m"
@@ -121,6 +123,8 @@ if [[ -t 1 ]]; then
 else
     C_ERROR=""
     C_NOT_SYNC=""
+    C_VERSION=""
+    C_HELP_PROGNAME=""
     C_CLEAN=""
     C_NO_REMOTE=""
     C_REPO=""
@@ -732,7 +736,7 @@ function cmd_clone()
     local dir repo remote remote_name remote_url
 
     if [[ -z "$1" ]]; then
-        echo -e "Usage: ${C_NOT_SYNC}$(basename "$0")${C_OFF} ${C_REPO}clone${C_OFF} ${C_CLEAN}<directory>...${C_OFF}"
+        echo -e "Usage: ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} ${C_REPO}clone${C_OFF} ${C_CLEAN}<directory>...${C_OFF}"
         return 1
     fi
 
@@ -1092,8 +1096,8 @@ function usage()
 {
     echo -e "gws is an helper to manage workspaces which contain git repositories.
 
-Usages: ${C_NOT_SYNC}$(basename "$0")${C_OFF} ${C_REPO}<command>${C_OFF} [${C_CLEAN}<directory>${C_OFF}]
-        ${C_NOT_SYNC}$(basename "$0")${C_OFF} [${C_CLEAN}<directory>${C_OFF}]
+Usages: ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} ${C_REPO}<command>${C_OFF} [${C_CLEAN}<directory>${C_OFF}]
+        ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} [${C_CLEAN}<directory>${C_OFF}]
 
 where ${C_REPO}<command>${C_OFF} is:
     ${C_REPO}init${C_OFF}   - Detect the repositories and create the projects list
@@ -1218,7 +1222,7 @@ case $command in
         cmd_check
         ;;
     version)
-        echo -e "gws version ${C_NOT_SYNC}$VERSION${C_OFF}"
+        echo -e "gws version ${C_VERSION}$VERSION${C_OFF}"
         ;;
     help)
         usage
