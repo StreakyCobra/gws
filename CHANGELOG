@@ -1,11 +1,16 @@
 0.1.12
 ======
 
-* Add Makefile and Debian packaging
-* Remove unused TODO file
-* Some bugs correction:
+* New features:
+  - Add support for custom color themes via a `.theme.gws` script in the
+    root projects directory
+
+* Bug fixes:
   - Unset CDPATH to avoid unwanted output (#18)
   - Detect repositories that are prefix of other ones (#20)
+  - Fix a scope pollution that broke cloning missing repos (#33)
+  - Fix "Internal error" on `gws ff` in Mac OS x (#34)
+  - Various unconfirmed OS X portability improvements... :)
 
 
 0.1.11
