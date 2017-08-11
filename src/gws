@@ -187,9 +187,6 @@ function remove_matching()
         # For all prefixes in `b`
         for b in "${set_b[@]}"
         do
-            # I'm not sur why I wrote this or where I got it, but it seems to
-            # escape characters that has a meaning for regexp
-            b=$(sed -e 's/[]\/()$*.^|[]/\\&/g' <<< "$b")
             # If `a` match the prefix, store result and exit the loop
             [[ $a =~ $b ]] && ok=1 && break
         done
@@ -221,9 +218,6 @@ function remove_prefixed()
         # Look for prefix
         for b in "${set_a[@]}"
         do
-            # I'm not sur why I wrote this or where I got it, but it seems to
-            # escape characters that has a meaning for regexp
-            b=$(sed -e 's/[]\/()$*.^|[]/\\&/g' <<< "$b")
             # If `a` match the prefix, store result and exit the loop
             [[ $a =~ ^$b.+ ]] && ok=1 && break
             # Because input is sorted, we can stop as soon as we are further
@@ -248,9 +242,6 @@ function keep_prefixed_projects()
 
     # Get the full path to limit-to in regexp form
     limit_to=$(cd "${START_PWD}/$1" && pwd )/
-    # I'm not sur why I wrote this or where I got it, but it seems to
-    # escape characters that has a meaning for regexp
-    limit_to=$(sed -e 's/[]\/()$*.^|[]/\\&/g' <<< "$limit_to")
 
     # Iterate over each project
     for dir in "${projects_indexes[@]}"
