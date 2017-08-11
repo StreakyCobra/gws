@@ -107,6 +107,7 @@ S_FAST_FORWARD=2
 
 # Printing in color.
 if [[ -t 1 ]]; then
+    C_ERROR="\e[91m"
     C_NOT_SYNC="\e[91m"
     C_CLEAN="\e[92m"
     C_NO_REMOTE="\e[93m"
@@ -118,6 +119,7 @@ if [[ -t 1 ]]; then
       source "$THEME_FILE";
     fi
 else
+    C_ERROR=""
     C_NOT_SYNC=""
     C_CLEAN=""
     C_NO_REMOTE=""
@@ -344,7 +346,7 @@ function read_projects()
                 elif [[ $count == 2 ]]; then
                     remote_name=$GIT_UPSTREAM
                 else
-                    error_msg="${C_NOT_SYNC}The URL at position ${count} for \"${dir}\" is missing a name.${C_OFF}"
+                    error_msg="${C_ERROR}The URL at position ${count} for \"${dir}\" is missing a name.${C_OFF}"
                     echo -e "$error_msg"
                     exit 1
                 fi
@@ -787,7 +789,7 @@ function cmd_clone()
 
             # Clone the repository
             if ! git_clone "$repo" "$dir"; then
-                printf "${INDENT}%-${MBL}s${C_NOT_SYNC} %s${C_OFF}\n" " " "Error"
+                printf "${INDENT}%-${MBL}s${C_ERROR} %s${C_OFF}\n" " " "Error"
                 return 1
             fi
 
@@ -1005,7 +1007,7 @@ function cmd_status()
             elif [[ "$rc" -eq 3 ]]; then
                 print_project_name_unless_done_already "$dir" $project_name_printed
                 printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
-                echo -en "${C_NOT_SYNC}Internal error${C_OFF}"
+                echo -en "${C_ERROR}Internal error${C_OFF}"
                 uptodate=0
                 printed=1
                 project_name_printed=1
@@ -1166,7 +1168,7 @@ while [[ "$1" =~ ^- ]]; do
             option_only_changes=true
             ;;
         *)
-            echo -e "${C_NOT_SYNC}Unknown option: $1${C_OFF}"
+            echo -e "${C_ERROR}Unknown option: $1${C_OFF}"
             exit 1
             ;;
     esac
@@ -1175,7 +1177,7 @@ done
 
 if $implicit_command; then
     if [[ -n "$1" ]]; then
-        error_msg="${C_NOT_SYNC}The directory '$1' is not found and is not a recognized command.${C_OFF}"
+        error_msg="${C_ERROR}The directory '$1' is not found and is not a recognized command.${C_OFF}"
         projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
         projects_indexes=( ${projects_list} )
     fi
@@ -1186,7 +1188,7 @@ fi
 if [[ -n "$1" ]]; then
     # But don't error out in the case of "clone", becuase the directory will probably not exist
     if [[ "$command" != "clone" ]]; then
-        error_msg="${C_NOT_SYNC}The directory '$1' is not found.${C_OFF}"
+        error_msg="${C_ERROR}The directory '$1' is not found.${C_OFF}"
         projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
         projects_indexes=( ${projects_list} )
     fi
