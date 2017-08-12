@@ -1,3 +1,10 @@
+0.1.14
+======
+
+* Bug fixes:
+  - Fix version number in `gws --version` output
+
+
 0.1.13
 ======
 
