@@ -1133,32 +1133,6 @@ The commands ${C_REPO}status${C_OFF}, ${C_REPO}fetch${C_OFF} and ${C_REPO}ff${C_
 
 
 
-# Except for the special case of "init" in which there is no projects file
-if [[ "$1" != "init" ]]; then
-    # First move to the first parent directory containing a projects file
-    while ! is_project_root
-    do
-        cd ..
-    done
-
-    read_theme
-
-    # Read the cache if present, otherwise create it
-    touch "${CACHE_FILE}"
-    [[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}"
-
-    # If cache is not up to date, read the projects/ignore files again
-    if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE} 2>/dev/null || echo NONE)" ]] ||
-       [[ "$CACHED_IGNORE_HASH" != "$(md5sum ${IGNORE_FILE} 2>/dev/null || echo NONE)" ]]; then
-        read_projects
-        read_ignored
-
-        projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
-        sed -i -e '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
-        declare -p projects_indexes >> "${CACHE_FILE}"
-    fi
-fi
-
 command=status
 implicit_command=false
 # Identify the desired command
@@ -1192,6 +1166,32 @@ while [[ "$1" =~ ^- ]]; do
     esac
     shift
 done
+
+# Except for the special case of "init" in which there is no projects file
+if [[ "$command" != "init" ]] && [[ "$command" != "help" ]]; then
+    # First move to the first parent directory containing a projects file
+    while ! is_project_root
+    do
+        cd ..
+    done
+
+    read_theme
+
+    # Read the cache if present, otherwise create it
+    touch "${CACHE_FILE}"
+    [[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}"
+
+    # If cache is not up to date, read the projects/ignore files again
+    if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE} 2>/dev/null || echo NONE)" ]] ||
+       [[ "$CACHED_IGNORE_HASH" != "$(md5sum ${IGNORE_FILE} 2>/dev/null || echo NONE)" ]]; then
+        read_projects
+        read_ignored
+
+        projects_indexes=( $(remove_matching projects_indexes[@] ignored_patterns[@]) )
+        sed -i -e '/^declare -a projects_indexes=/d' "${CACHE_FILE}"
+        declare -p projects_indexes >> "${CACHE_FILE}"
+    fi
+fi
 
 if $implicit_command; then
     if [[ -n "$1" ]]; then
