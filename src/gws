@@ -94,7 +94,7 @@ GIT_ORIGIN="origin"
 # Git name of the upstream branch of repositories.
 GIT_UPSTREAM="upstream"
 
-# Git folder name. Used to identify git unlisted repositories.
+# Git folder name. Used to detect unlisted git repositories.
 GIT_FOLDER=".git"
 
 # Indentation for status display.
@@ -149,7 +149,7 @@ function read_theme() {
 
 
 #-------------------------------------------------------------------------------
-#  Variables declarations
+#  Variable declarations
 #-------------------------------------------------------------------------------
 
 # Associative array containing projects' information, associated by the key
@@ -207,7 +207,7 @@ function remove_matching()
         # For all prefixes in `b`
         for b in "${set_b[@]}"
         do
-            # If `a` match the prefix, store result and exit the loop
+            # If `a` matches the prefix, store result and exit the loop
             [[ $a =~ $b ]] && ok=1 && break
         done
 
@@ -218,10 +218,10 @@ function remove_matching()
     return 0
 }
 
-# Remove from a list all elements that have for prefix another element in the
-# same list. Used to remove subrepositories, e.g. the list ( foo/bar/ foo/ ).
-# The element foo/bar/ has for prefix foo/, so removing foo/bar because it is a
-# subrepository.
+# Remove from a list all elements that have as prefix another element in the
+# same list. Used to remove subrepositories, e.g. in the list `( foo/bar/ foo/
+# )` the element `foo/bar/` has `foo/` as a prefix, so `foo/bar` is removed
+# because it is a subrepository.
 # IMPORTANT: The input list must be sorted.
 function remove_prefixed()
 {
@@ -238,7 +238,7 @@ function remove_prefixed()
         # Look for prefix
         for b in "${set_a[@]}"
         do
-            # If `a` match the prefix, store result and exit the loop
+            # If `a` matches the prefix, store result and exit the loop
             [[ $a =~ ^$b.+ ]] && ok=1 && break
             # Because input is sorted, we can stop as soon as we are further
             # than the current entry
@@ -260,7 +260,7 @@ function keep_prefixed_projects()
     # First check if the folder exists
     [[ ! -d "${START_PWD}/$1" ]] && return 1
 
-    # Get the full path to limit-to in regexp form
+    # Get the full path to limit_to in regexp form
     limit_to=$(cd "${START_PWD}/$1" && pwd )/
 
     # Iterate over each project
@@ -269,7 +269,7 @@ function keep_prefixed_projects()
         # Get its full path
         current=$(cd "${PWD}/${dir}/" && pwd )/
 
-        # If it match, add it to the output
+        # If it matches, add it to the output
         [[ $current =~ ^$limit_to ]] && echo -n "$dir "
     done
 
@@ -282,17 +282,18 @@ function keep_prefixed_projects()
 #  Projects functions
 #-------------------------------------------------------------------------------
 
-# Is the current directory the root of workspace?
+# Is the current directory the root of a workspace?
 function is_project_root()
 {
-    # If there is a project file, this is a project root
+
+    # If there is a projects file, this is a project root
     (ls "$PROJECTS_FILE" 1>/dev/null 2>&1) && return 0
 
     # If we reach root, and there is no projects file, exit with an error
     # message
     [[ $(pwd) = "/" ]] && echo "Not in a workspace" && exit 1
 
-    # Otherwise return failure. Must never be reached... normally
+    # Otherwise return false.
     return 1
 }
 
@@ -333,31 +334,31 @@ function read_projects()
         # Remove inline comments
         line=$(sed -e 's/#.*$//' <<< "$line")
 
-        # We get the directory
+        # Get the directory
         dir=$(cut -d${FIELD_SEP} -f1 <<< "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-        # We get the rest of the configuration line containing remotes
+        # Get the rest of the configuration line containing remotes
         remotes=$(sed -E -e "s/^[^${FIELD_SEP}]*\\${FIELD_SEP}?//" <<< "$line")
 
-        # We iterate over all the remotes
+        # Iterate over all the remotes
         count=0
         remotes_list=""
         while [ -n "$remotes" ];
         do
             count=$((count + 1))
-            # We get the first defined remote in the "remotes" variable
+            # Get the first remote defined in the "remotes" variable
             remote=$(cut -d${FIELD_SEP} -f1 <<< "$remotes" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/[[:space:]]\+/ /g')
-            # We remove the current remote from the line for next iteration
+            # Remove the current remote from the line for next iteration
             remotes=$(sed -E -e "s/^[^${FIELD_SEP}]*\\${FIELD_SEP}?//" <<< "$remotes")
-            # We get its url
+            # Get its url
             remote_url=$(cut -d"${URL_NAME_SEP}" -f1 <<< "$remote" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-            # We get its name if any
+            # Get its name, if any
             remote_name=$(cut -d"${URL_NAME_SEP}" -f2 -s <<< "$remote")
 
-            # If name its not set we correct it according to:
+            # If name is not set we infer it as:
             # 1st: origin
             # 2nd: upstream
-            # Or throw an error message
+            # Else crash
             if [[ -z "$remote_name" ]]; then
                 if [[ $count == 1 ]]; then
                     remote_name=$GIT_ORIGIN
@@ -370,7 +371,7 @@ function read_projects()
                 fi
             fi
 
-            # We store the current remote in the list of remotes
+            # Store the current remote in the list of remotes
             remotes_list+="${remote_name}${FIELD_SEP}${remote_url}${ARRAY_LINE_SEP}"
         done
 
@@ -416,7 +417,7 @@ function read_ignored()
         # Remove inline comments
         pattern=$(sed -e 's/#.*$//' <<< "$pattern")
 
-        # Check if this is an empty pattern: go to next one
+        # Go to next pattern if this pattern is empty
         [[ -z $pattern ]] && continue
 
         # Escape regex characters
@@ -521,7 +522,7 @@ function git_fetch_update()
     return 0
 }
 
-# Fast-forward from the origin
+# Fast-forward to the origin
 function git_fast_forward()
 {
     local cmd
@@ -625,43 +626,43 @@ function git_branches()
     # Run the command and get the output
     output=$(cd "$1" && "${cmd[@]}" | cut -d'*' -f 2 | tr -d ' ')
 
-    # Saves to the branches array to be accessed by the caller
+    # Save to the global branches array to be accessed by the caller
     branches=( $output )
 
     return 0
 }
 
-# Check for changes not commited
-function git_check_uncached_uncommited()
+# Check for uncommitted changes
+function git_check_uncached_uncommitted()
 {
     local cmd
 
     # Git command to execute
     cmd=( "git" "diff" "--exit-code" )
 
-    # Run the command, and if it succeed, return success
+    # Run the command, and return success if it succeeds
     (cd "$1" && "${cmd[@]}" 1>/dev/null 2>&1) && return 0
 
     # Otherwise return failure
     return 1
 }
 
-# Check for changes not commited but cached
-function git_check_cached_uncommited()
+# Check for cached but uncommitted changes
+function git_check_cached_uncommitted()
 {
     local cmd
 
     # Git command to execute
     cmd=( "git" "diff" "--cached" "--exit-code" )
 
-    # Run the command, and if it succeed, return success
+    # Run the command, and return success if it succeeds
     (cd "$1" && "${cmd[@]}" 1>/dev/null 2>&1) && return 0
 
     # Otherwise return failure
     return 1
 }
 
-# Check for changes not commited but cached
+# Check for untracked files
 function git_check_untracked()
 {
     local cmd nb
@@ -672,14 +673,14 @@ function git_check_untracked()
     # Run the command
     nb=$(cd "$1" && "${cmd[@]}" 2>/dev/null | grep -c "^??")
 
-    # If no untracked files return success
+    # If no untracked files exist, return success
     [[ $nb -eq 0 ]] && return 0
 
     # Otherwise return failure
     return 1
 }
 
-# Check for changes not commited
+# Check if a local branch points to the same commit as a remote branch
 function git_check_branch_origin()
 {
     local local_cmd remote_cmd local_hash remote_hash
@@ -689,11 +690,11 @@ function git_check_branch_origin()
     remote_cmd=( "git" "rev-parse" "--verify" "${GIT_ORIGIN}/$2" )
 
     # Execute the command to get the local hash, If it fails this is weird,
-    # so... exiting
+    # so... return failure
     local_hash=$(cd "$1"; "${local_cmd[@]}" 2>/dev/null) || return 3
 
-    # Execute the command to get the remote hash. If it fails, that mean there
-    # is no remote branch, return special code
+    # Execute the command to get the remote hash. If it fails that means there
+    # is no remote branch - return special code
     remote_hash=$(cd "$1"; "${remote_cmd[@]}" 2>/dev/null) || return 2
 
     # If the hashes are equal, return success
@@ -739,7 +740,6 @@ function cmd_init()
     # Write the file if it is not empty
     [[ ! -z "$output" ]] && (echo "$output" > ${PROJECTS_FILE}) && echo -e "${C_CLEAN}Workspace file «${PROJECTS_FILE}» created.${C_OFF}" && return 0
 
-    # Display informations messages
     echo -e "${C_NO_REMOTE}No repository found.${C_OFF}"
     return 1
 }
@@ -757,7 +757,7 @@ function cmd_clone()
     # For all projects
     for dir in "$@"
     do
-        # Get informations about the current project
+        # Get information about the current project
         repo=$(get_repo_url "${projects[$dir]}")
 
         # Print the repository
@@ -797,12 +797,11 @@ function cmd_clone()
             continue
         fi
 
-        # Clone repository if not existing
+        # Clone repository if missing
         if [[ ! -d "$dir" ]]; then
             print_project_name_unless_done_already "$dir" $project_name_printed
             project_name_printed=1
 
-            # Print the information
             printf "${INDENT}%-${MBL}s${C_LOGS} %s${C_OFF}\n" " " "Cloning…"
 
             # Clone the repository
@@ -814,7 +813,7 @@ function cmd_clone()
             printf "${INDENT}%-${MBL}s${C_CLEAN} %s${C_OFF}\n" " " "Cloned"
         fi
 
-        # Verify all remotes, create if not existing
+        # Create any missing remotes
         IFS=${ARRAY_LINE_SEP} read -a array <<< "${projects[$dir]}"
         for remote in "${array[@]}"
         do
@@ -835,7 +834,6 @@ function cmd_update()
 {
     local dir
 
-    # For all projects
     for dir in "${projects_indexes[@]}"
     do
         cmd_clone "$dir"
@@ -864,7 +862,7 @@ function cmd_status()
     # For each project
     for dir in "${projects_indexes[@]}"
     do
-        # Get informations about the current project
+        # Get information about the current project
         repo=$(get_repo_url "${projects[$dir]}")
 
         # Project name has not been printed yet
@@ -900,8 +898,8 @@ function cmd_status()
         # Nothing is printed yet
         printed=0
 
-        # Check for not commited not cached changes
-        if ! git_check_uncached_uncommited "$dir"; then
+        # Check for uncached and uncommitted changes
+        if ! git_check_uncached_uncommitted "$dir"; then
             print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_NOT_SYNC}Dirty (Uncached changes)${C_OFF} "
@@ -909,8 +907,8 @@ function cmd_status()
             uptodate=0
             printed=1
             project_name_printed=1
-        # Check for not commited changes
-        elif ! git_check_cached_uncommited "$dir"; then
+        # Check for cached but uncommitted changes
+        elif ! git_check_cached_uncommitted "$dir"; then
             print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_NOT_SYNC}Dirty (Uncommitted changes)${C_OFF} "
@@ -928,8 +926,8 @@ function cmd_status()
             printed=1
             project_name_printed=1
         # If the "origin" URL is not defined in the project list, then no need
-        # to check for synchronization, it is clean if there is no untracked,
-        # uncached or uncommited changes.
+        # to check for synchronization. It is clean if there is no untracked,
+        # uncached or uncommitted changes.
         elif [[ -z $repo ]]; then
             print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
@@ -984,7 +982,7 @@ function cmd_status()
                 continue
             fi
 
-            # Fast forward from origin
+            # Fast forward to origin
             if [[ $1 -eq $S_FAST_FORWARD ]]; then
                 # Pull fast forward for current branch
                 if [ "$branch" = "$current" ]; then
@@ -997,10 +995,10 @@ function cmd_status()
 
             printed=0
 
-            # Check for not consistant branches
+            # Check for diverged branches
             git_check_branch_origin "$dir" "$branch";
 
-            # Get the return of the function
+            # Get the return code
             rc=$?
 
             # If the hashes are different
@@ -1030,7 +1028,7 @@ function cmd_status()
                 printed=1
                 project_name_printed=1
 
-            # Otherwise
+            # Otherwise it's clean
             else
                 if ! $option_only_changes || [[ $printed -eq 1 ]] || [[ $project_name_printed -eq 1 ]] || [[ "$after" != "\n" ]]; then
                     print_project_name_unless_done_already "$dir" $project_name_printed
@@ -1041,7 +1039,7 @@ function cmd_status()
                 fi
             fi
 
-            # Print after informations
+            # Print any additional info
             if [[ $printed -eq 1 ]]; then
                 echo -en "${after}"
             fi
@@ -1071,15 +1069,15 @@ function cmd_check()
     # Create the list of ignored projects only
     readarray -t projects_ignored < <(comm -23 <(for a in "${projects_all_indexes[@]}"; do echo "$a"; done | sort) <(for a in "${projects_indexes[@]}"; do echo "$a"; done | sort))
 
-    # Prepare list of all projects, existing or missing, sorted with no
+    # Prepare list of all projects, existing or missing, sorted with no duplicates
     found=( $(find ./* -type d -name "$GIT_FOLDER" | sed -e "s#/${GIT_FOLDER}\$##" | cut -c 3- | sort) )
     all=( "${found[@]}" "${projects_all_indexes[@]}" )
     readarray -t all < <(for a in "${all[@]}"; do echo "$a"; done | sort -u)
 
-    # For each repositories
+    # For each repository
     for dir in "${all[@]}"
     do
-        # Print the repository
+        # Print the repository name
         echo -e "${C_REPO}$dir${C_OFF}:"
 
         # Check if the directory is ignored
@@ -1094,7 +1092,7 @@ function cmd_check()
             continue
         fi
 
-        # Check if it is listed as project and print according message
+        # Check if it is listed as a project and print result
         if exists_project "$dir"; then
             printf "${INDENT}%-${MBL}s${C_CLEAN} %s${C_OFF}\n" " " "Known"
         else
@@ -1105,22 +1103,22 @@ function cmd_check()
     return 0
 }
 
-# Display the usage of this program
+# Display usage help
 function usage()
 {
-    echo -e "gws is an helper to manage workspaces which contain git repositories.
+    echo -e "gws is a helper to manage workspaces which contain git repositories.
 
 Usages: ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} ${C_REPO}<command>${C_OFF} [${C_HELP_DIR}<directory>${C_OFF}]
         ${C_HELP_PROGNAME}$(basename "$0")${C_OFF} [${C_HELP_DIR}<directory>${C_OFF}]
 
 where ${C_REPO}<command>${C_OFF} is:
-    ${C_REPO}init${C_OFF}   - Detect the repositories and create the projects list
-    ${C_REPO}update${C_OFF} - Update the workspace to get new repositories from projects list
+    ${C_REPO}init${C_OFF}   - Detect repositories and create the projects list
+    ${C_REPO}update${C_OFF} - Clone any repositories in the projects list that are missing in the workspace
     ${C_REPO}clone${C_OFF}  - Selectively clone specific repositories from projects list
     ${C_REPO}status${C_OFF} - Print status for all repositories in the workspace
-    ${C_REPO}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin before
-    ${C_REPO}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward from origin before
-    ${C_REPO}check${C_OFF}  - Check the workspace for all repositories (known/unknown/missing)
+    ${C_REPO}fetch${C_OFF}  - Print status for all repositories in the workspace, but fetch the origin first
+    ${C_REPO}ff${C_OFF}     - Print status for all repositories in the workspace, but fast forward to origin first
+    ${C_REPO}check${C_OFF}  - Print difference between projects list and workspace (known/unknown/missing)
 
 where ${C_HELP_DIR}<directory>${C_OFF} can be a path to limit the scope of the commands to a specific subfolder
 of the workspace.
@@ -1135,7 +1133,7 @@ The commands ${C_REPO}status${C_OFF}, ${C_REPO}fetch${C_OFF} and ${C_REPO}ff${C_
 
 
 
-# Except for the special case of "init" in which there is no project files
+# Except for the special case of "init" in which there is no projects file
 if [[ "$1" != "init" ]]; then
     # First move to the first parent directory containing a projects file
     while ! is_project_root
@@ -1145,11 +1143,11 @@ if [[ "$1" != "init" ]]; then
 
     read_theme
 
-    # Read the cache if existing, create it if not existing.
+    # Read the cache if present, otherwise create it
     touch "${CACHE_FILE}"
     [[ -e "${CACHE_FILE}" ]] && source "${CACHE_FILE}"
 
-    # If cache is not up to date, read again the projects/ignore files
+    # If cache is not up to date, read the projects/ignore files again
     if [[ "$CACHED_PROJECTS_HASH" != "$(md5sum ${PROJECTS_FILE} 2>/dev/null || echo NONE)" ]] ||
        [[ "$CACHED_IGNORE_HASH" != "$(md5sum ${IGNORE_FILE} 2>/dev/null || echo NONE)" ]]; then
         read_projects
@@ -1197,7 +1195,7 @@ done
 
 if $implicit_command; then
     if [[ -n "$1" ]]; then
-        error_msg="${C_ERROR}The directory '$1' is not found and is not a recognized command.${C_OFF}"
+        error_msg="${C_ERROR}The directory '$1' does not exist and is not a recognized command.${C_OFF}"
         projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
         projects_indexes=( ${projects_list} )
     fi
@@ -1206,9 +1204,9 @@ fi
 # If a path is specified as positional argument, limit projects to the ones matching
 # the path
 if [[ -n "$1" ]]; then
-    # But don't error out in the case of "clone", becuase the directory will probably not exist
+    # But don't error out in the case of "clone", because the directory will probably not exist
     if [[ "$command" != "clone" ]]; then
-        error_msg="${C_ERROR}The directory '$1' is not found.${C_OFF}"
+        error_msg="${C_ERROR}The directory '$1' does not exist.${C_OFF}"
         projects_list=$(keep_prefixed_projects "$1") || (echo -e "$error_msg" && exit 1) || exit 1
         projects_indexes=( ${projects_list} )
     fi
