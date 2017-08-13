@@ -1128,7 +1128,6 @@ If no ${C_REPO}<command>${C_OFF} is specified, the command ${C_REPO}status${C_OF
 The commands ${C_REPO}status${C_OFF}, ${C_REPO}fetch${C_OFF} and ${C_REPO}ff${C_OFF} accept the option
 --only-changes before the ${C_HELP_DIR}<directory>${C_OFF}. If given, only repositories with changes will be shown.
 "
-    exit 1
 }
 
 
