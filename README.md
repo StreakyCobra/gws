@@ -361,3 +361,4 @@ Many thanks to these people for contributions:
 - Pascal Obry
 - Thomas Pérennou
 - Emil Lundberg
+- Thomas Lemaire

@@ -5,7 +5,7 @@
 # OS:           (Probably?) All Linux distributions                            #
 # Requirements: git, bash > 4.0                                                #
 # License:      MIT (See below)                                                #
-# Version:      0.1.16                                                         #
+# Version:      0.2.0                                                          #
 #                                                                              #
 # 'gws' is the abbreviation of 'Git WorkSpace'.                                #
 # This is a helper to manage workspaces composed of git repositories.          #
@@ -58,7 +58,7 @@ CDPATH=""
 #-------------------------------------------------------------------------------
 
 # Version number.
-VERSION="0.1.16"
+VERSION="0.2.0"
 
 # Starting directory.
 START_PWD="$(pwd)"
@@ -99,6 +99,8 @@ GIT_FOLDER=".git"
 
 # Indentation for status display.
 INDENT="    "
+# Indentation including a * for current branch status display.
+INDENT_CURRENT="  * "
 
 # Max length of branch names. Used to align information about branches in
 # status.
@@ -883,7 +885,6 @@ function cmd_status()
 
         # Get the current branch name
         current=$(git_branch "$dir")
-
         # Cut branch name
         if [ ${#current} -gt $((MBL - 3)) ]; then
             display_current="${current:0:$((MBL - 3))}… :"
@@ -901,7 +902,7 @@ function cmd_status()
         # Check for uncached and uncommitted changes
         if ! git_check_uncached_uncommitted "$dir"; then
             print_project_name_unless_done_already "$dir" $project_name_printed
-            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            printf "${INDENT_CURRENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_NOT_SYNC}Dirty (Uncached changes)${C_OFF} "
             branch_done=1
             uptodate=0
@@ -910,7 +911,7 @@ function cmd_status()
         # Check for cached but uncommitted changes
         elif ! git_check_cached_uncommitted "$dir"; then
             print_project_name_unless_done_already "$dir" $project_name_printed
-            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            printf "${INDENT_CURRENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_NOT_SYNC}Dirty (Uncommitted changes)${C_OFF} "
             branch_done=1
             uptodate=0
@@ -919,7 +920,7 @@ function cmd_status()
         # Check for untracked files
         elif ! git_check_untracked "$dir"; then
             print_project_name_unless_done_already "$dir" $project_name_printed
-            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            printf "${INDENT_CURRENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_NOT_SYNC}Dirty (Untracked files)${C_OFF} "
             branch_done=1
             uptodate=0
@@ -930,7 +931,7 @@ function cmd_status()
         # uncached or uncommitted changes.
         elif [[ -z $repo ]]; then
             print_project_name_unless_done_already "$dir" $project_name_printed
-            printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
+            printf "${INDENT_CURRENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
             echo -ne "${C_CLEAN}Clean${C_OFF} "
             printed=1
             project_name_printed=1
@@ -993,6 +994,12 @@ function cmd_status()
                 fi
             fi
 
+            if [ "$branch" = "$current" ]; then
+                branch_indent="${INDENT_CURRENT}"
+            else
+                branch_indent="${INDENT}"
+            fi
+
             printed=0
 
             # Check for diverged branches
@@ -1004,7 +1011,7 @@ function cmd_status()
             # If the hashes are different
             if [[ "$rc" -eq 1 ]]; then
                 print_project_name_unless_done_already "$dir" $project_name_printed
-                printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                printf "${branch_indent}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_NOT_SYNC}Not in sync with ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
                 printed=1
@@ -1013,7 +1020,7 @@ function cmd_status()
             # If the remote doesn't exist
             elif [[ "$rc" -eq 2 ]]; then
                 print_project_name_unless_done_already "$dir" $project_name_printed
-                printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                printf "${branch_indent}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_NO_REMOTE}No remote branch ${GIT_ORIGIN}/$branch${C_OFF}"
                 uptodate=0
                 printed=1
@@ -1022,7 +1029,7 @@ function cmd_status()
             # If there is no local hash (must never happen... but who knows?)
             elif [[ "$rc" -eq 3 ]]; then
                 print_project_name_unless_done_already "$dir" $project_name_printed
-                printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                printf "${branch_indent}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
                 echo -en "${C_ERROR}Internal error${C_OFF}"
                 uptodate=0
                 printed=1
@@ -1032,7 +1039,7 @@ function cmd_status()
             else
                 if ! $option_only_changes || [[ $printed -eq 1 ]] || [[ $project_name_printed -eq 1 ]] || [[ "$after" != "\n" ]]; then
                     print_project_name_unless_done_already "$dir" $project_name_printed
-                    printf "${INDENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
+                    printf "${branch_indent}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_branch :"
                     echo -en "${C_CLEAN}Clean${C_OFF}"
                     printed=1
                     project_name_printed=1
