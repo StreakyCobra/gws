@@ -114,6 +114,7 @@ S_FAST_FORWARD=2
 # Default colors
 C_ERROR="\e[91m"
 C_NOT_SYNC="\e[91m"
+C_OPERATION="\e[91m"
 C_VERSION="\e[91m"
 C_HELP_PROGNAME="\e[91m"
 C_CLEAN="\e[92m"
@@ -706,6 +707,23 @@ function git_check_branch_origin()
     return 1
 }
 
+# Check if the git repo contains a merge head
+function git_check_for_merge_head()
+{
+    [[ -f "$1/.git/MERGE_HEAD" ]] && return 0
+
+    # Otherwise return failure
+    return 1
+}
+
+# Check if the git repo contains a cherry-pick head
+function git_check_for_cherry_pick_head()
+{
+    [[ -f "$1/.git/CHERRY_PICK_HEAD" ]] && return 0
+
+    # Otherwise return failure
+    return 1
+}
 
 #-------------------------------------------------------------------------------
 #  Command functions
@@ -793,7 +811,7 @@ function cmd_clone()
         fi
 
         if [[ $project_name_printed -eq 1 ]] || [[ -n "$after" ]]; then
-            printf "$after\n"
+            printf "%s\n" "$after"
         fi
         if [[ $skip_clone -eq 1 ]]; then
             continue
@@ -857,7 +875,7 @@ function print_project_name_unless_done_already() {
 # Status command
 function cmd_status()
 {
-    local dir repo branch branch_done rc uptodate printed
+    local dir repo branch branch_done rc uptodate printed branch_annotation
 
     uptodate=1
 
@@ -899,6 +917,17 @@ function cmd_status()
         # Nothing is printed yet
         printed=0
 
+        # Define current branch annotation
+        # Add special information about merge in progress
+        if git_check_for_merge_head "$dir"; then
+            branch_annotation="${C_OPERATION}[merge in progress]${C_OFF} "
+        elif git_check_for_cherry_pick_head "$dir"; then
+            # Add special information about cherry-pick in progress
+            branch_annotation="${C_OPERATION}[cherry-pick in progress]${C_OFF} "
+        else
+            branch_annotation=""
+        fi
+
         # Check for uncached and uncommitted changes
         if ! git_check_uncached_uncommitted "$dir"; then
             print_project_name_unless_done_already "$dir" $project_name_printed
@@ -912,7 +941,7 @@ function cmd_status()
         elif ! git_check_cached_uncommitted "$dir"; then
             print_project_name_unless_done_already "$dir" $project_name_printed
             printf "${INDENT_CURRENT}${C_BRANCH}%-${MBL}s${C_OFF} " "$display_current"
-            echo -ne "${C_NOT_SYNC}Dirty (Uncommitted changes)${C_OFF} "
+            echo -ne "${C_NOT_SYNC}Dirty (Uncommitted changes${STATE_FLAG})${C_OFF} "
             branch_done=1
             uptodate=0
             printed=1
@@ -946,7 +975,7 @@ function cmd_status()
         fi
 
         # If something was printed, finish the line
-        [[ $printed -eq 1 ]] && printf "\n"
+        [[ $printed -eq 1 ]] && echo -e "$branch_annotation"
 
         # List branches of current repository
         git_branches "$dir"
@@ -996,8 +1025,10 @@ function cmd_status()
 
             if [ "$branch" = "$current" ]; then
                 branch_indent="${INDENT_CURRENT}"
+                after_note="${branch_annotation}"
             else
                 branch_indent="${INDENT}"
+                after_note=""
             fi
 
             printed=0
@@ -1048,6 +1079,9 @@ function cmd_status()
 
             # Print any additional info
             if [[ $printed -eq 1 ]]; then
+                if [[ $uptodate -eq 0 ]]; then
+                    echo -en " ${after_note}"
+                fi
                 echo -en "${after}"
             fi
         done
