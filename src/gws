@@ -811,7 +811,7 @@ function cmd_clone()
         fi
 
         if [[ $project_name_printed -eq 1 ]] || [[ -n "$after" ]]; then
-            printf "$after\n"
+            printf "%s\n" "$after"
         fi
         if [[ $skip_clone -eq 1 ]]; then
             continue
